@@ -1,0 +1,12 @@
+# SwingScan default configuration.
+# Schema lives in src/swingscan/config.py (SwingScanConfig).
+# Stage 0 only uses the top-level skeleton; later stages add nested
+# sections for club detection, phase segmentation, metrics, feedback
+# rules, and the demo UI.
+logging:
+  level: INFO
+pose:
+  backend: mediapipe
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+seed: 17

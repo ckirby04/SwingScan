@@ -1,0 +1,163 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "swingscan"
+version = "0.0.1"
+description = "Computer-vision pipeline that extracts pose, segments phases, and returns biomechanical feedback for amateur golf swings."
+readme = "README.md"
+requires-python = "==3.11.*"
+license = { text = "MIT" }
+authors = [{ name = "SwingScan contributors" }]
+keywords = ["golf", "pose-estimation", "computer-vision", "biomechanics"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+
+# Core dependencies kept intentionally light so Stage 0 bootstrap installs
+# fast. Heavy ML deps (torch, mediapipe, ultralytics, gradio) live in the
+# `pipeline` extra and are required from Stage 1 onward. See
+# docs/decisions/001-dependency-extras.md for the rationale.
+dependencies = [
+    "numpy==1.26.4",
+    "pandas==2.2.2",
+    "pydantic==2.7.4",
+    "pyyaml==6.0.1",
+    "pyarrow==16.1.0",
+]
+
+[project.optional-dependencies]
+pipeline = [
+    "opencv-python==4.10.0.84",
+    "scipy==1.13.1",
+    "scikit-learn==1.5.0",
+    "mediapipe==0.10.14",
+    "torch==2.3.1",
+    "torchvision==0.18.1",
+    "ultralytics==8.2.50",
+    "gradio==4.36.1",
+]
+dev = [
+    "pytest==8.2.2",
+    "pytest-cov==5.0.0",
+    "ruff==0.5.0",
+    "mypy==1.10.0",
+    "pre-commit==3.7.1",
+    "types-PyYAML==6.0.12.20240311",
+]
+
+[project.scripts]
+swingscan = "swingscan.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/swingscan/swingscan"
+Issues = "https://github.com/swingscan/swingscan/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["swingscan*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "scripts"]
+extend-exclude = ["data", "models", "notebooks"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "C4",  # flake8-comprehensions
+    "RUF", # ruff-specific
+]
+ignore = [
+    "E501", # line too long — ruff formatter handles it
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["B018"]
+"scripts/**/*.py" = ["E402"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/swingscan"]
+mypy_path = "src"
+namespace_packages = true
+explicit_package_bases = true
+warn_unused_configs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*", "scripts.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "cv2",
+    "cv2.*",
+    "mediapipe",
+    "mediapipe.*",
+    "ultralytics",
+    "ultralytics.*",
+    "gradio",
+    "gradio.*",
+    "torch",
+    "torch.*",
+    "torchvision",
+    "torchvision.*",
+    "scipy",
+    "scipy.*",
+    "sklearn",
+    "sklearn.*",
+]
+ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=swingscan",
+    "--cov-report=term-missing",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:google.*",
+    "ignore::DeprecationWarning:pkg_resources.*",
+]
+
+[tool.coverage.run]
+source = ["src/swingscan"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+precision = 1

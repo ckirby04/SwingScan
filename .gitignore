@@ -1,0 +1,73 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+build/
+dist/
+.eggs/
+pip-wheel-metadata/
+
+# === Virtualenvs ===
+.venv/
+venv/
+env/
+.envrc
+.python-version.local
+
+# === Tooling caches ===
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# === Editors / OS ===
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === SwingScan data + weights ===
+# All downloaded datasets, processed artifacts, and model checkpoints are
+# user-local and must never be committed. See data/README.md and
+# models/README.md.
+data/
+!data/README.md
+!data/.gitkeep
+!data/**/.gitkeep
+models/
+!models/README.md
+!models/.gitkeep
+
+# === Media ===
+# Default-deny on raw video outside the small test fixtures dir.
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+!tests/fixtures/*.mp4
+!tests/fixtures/*.mov
+
+# === Secrets ===
+.env
+.env.local
+*.pem
+*.key
+credentials.json
+
+# === Notebook checkpoints ===
+.ipynb_checkpoints/
+
+# === Misc temp ===
+*.log
+*.tmp
+tmp/
