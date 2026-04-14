@@ -17,19 +17,19 @@ SwingScan is built in strict stage gates. Each stage merges only after its
 exit criterion is met. The active branch is the one currently iterating on
 the in-progress stage.
 
-| Stage | Name                              | Status        | Notes |
-|-------|-----------------------------------|---------------|-------|
-| 0     | Bootstrap                         | In progress   | Scaffold, tooling, smoke test. Branch `stage-0-bootstrap`. Status: [`docs/plans/stage0-status.md`](docs/plans/stage0-status.md). |
-| 1     | Video I/O + Pose (MediaPipe)      | Not started   | — |
-| 2     | Club-head detection               | Not started   | — |
-| 3     | GolfDB ingestion + pro bank       | Not started   | — |
-| 4     | Phase segmentation (SwingNet)     | Not started   | — |
-| 5     | Biomech metrics + comparison      | Not started   | — |
-| 6     | Feedback generation               | Not started   | — |
-| 7     | Visualization overlays            | Not started   | — |
-| 8     | Demo UI (Gradio)                  | Not started   | — |
-| 9     | Evaluation harness                | Not started   | — |
-| 10    | Polish + handoff                  | Not started   | — |
+| Stage | Name                              | Status  | Notes |
+|-------|-----------------------------------|---------|-------|
+| 0     | Bootstrap                         | Done    | Scaffold, tooling, smoke test. [status](docs/plans/stage0-status.md) |
+| 1     | Video I/O + Pose (MediaPipe)      | Done    | `swingscan pose` CLI, parquet schema. [status](docs/plans/stage1-status.md) |
+| 2     | Club-head detection               | Done    | Heuristic + YOLO, `ClubTracker`. [status](docs/plans/stage2-status.md) · [ADR 002](docs/decisions/002-club-detection-fallback.md) |
+| 3     | GolfDB ingestion + pro bank       | Done    | `ProBank`, download + build scripts. [status](docs/plans/stage3-status.md) |
+| 4     | Phase segmentation                | Done    | Heuristic + SwingNet stub, `swingscan phases`. [status](docs/plans/stage4-status.md) |
+| 5     | Biomech metrics + comparison      | Done    | `SwingMetrics`, `SwingDiff`. [status](docs/plans/stage5-status.md) |
+| 6     | Feedback generation               | Done    | 15-rule YAML engine, text + JSON. [status](docs/plans/stage6-status.md) |
+| 7     | Visualization overlays            | Done    | Annotated video output. [status](docs/plans/stage7-status.md) |
+| 8     | Demo UI (Gradio)                  | Done    | `make demo`. [status](docs/plans/stage8-status.md) |
+| 9     | Evaluation harness                | Done    | `scripts/evaluate_pipeline.py`. [status](docs/plans/stage9-status.md) |
+| 10    | Polish + handoff                  | Done    | v0.1.0 tag, ROADMAP, architecture docs. |
 
 ## Quickstart
 
@@ -67,17 +67,32 @@ From Stage 1 onward you will also need the heavy pipeline extras (`torch`,
 See [ADR 001](docs/decisions/001-dependency-extras.md) for why heavy deps
 are split out.
 
-### Run the pipeline (not yet available)
-
-Will be wired up in Stage 1:
+### Run the pipeline
 
 ```bash
-swingscan pose --input tests/fixtures/sample_swing.mp4 --output /tmp/pose.parquet
-swingscan phases --input tests/fixtures/sample_swing.mp4 --output /tmp/phases.json
-swingscan run --input tests/fixtures/sample_swing.mp4 --output-video /tmp/out.mp4
+# Pose extraction only (parquet output).
+swingscan pose --input tests/fixtures/sample_swing.mp4 --output pose.parquet
+
+# Phase segmentation only.
+swingscan phases --input tests/fixtures/sample_swing.mp4 --output phases.json
+
+# Full run: pose + club + phases + optional feedback + annotated video.
+swingscan run \
+  --input tests/fixtures/sample_swing.mp4 \
+  --output report.json \
+  --output-video annotated.mp4 \
+  --pro-bank data/pro_bank/bank.parquet  # optional; enables feedback
 ```
 
-Today (Stage 0) only `swingscan version` and a `swingscan run` stub exist.
+### Launch the local demo
+
+```bash
+make demo
+# → http://127.0.0.1:7860
+```
+
+The demo is local-only, binds to 127.0.0.1 by default, caps uploads at
+100 MB / 30 s, and does not persist input videos.
 
 ## Scope guardrails (V1)
 
