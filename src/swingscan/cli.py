@@ -62,13 +62,28 @@ def _build_parser() -> argparse.ArgumentParser:
 
     run_p = subparsers.add_parser(
         "run",
-        help="Run the end-to-end pipeline on a single swing video (stub in Stage 0).",
+        help="Run the pipeline on a single swing video (Stage 2: pose + club).",
     )
     run_p.add_argument("--input", required=True, help="Path to a swing video.")
     run_p.add_argument(
+        "--output",
+        default=None,
+        help="Optional path to write a pipeline JSON report.",
+    )
+    run_p.add_argument(
+        "--club-weights",
+        default=None,
+        help="Optional path to a YOLO club-head weights file. When absent, uses heuristic fallback.",
+    )
+    run_p.add_argument(
         "--output-video",
         default=None,
-        help="Optional path to write an annotated output video.",
+        help="Optional path to write an annotated output video (Stage 7+, no-op today).",
+    )
+    run_p.add_argument(
+        "--config",
+        default=None,
+        help="Optional path to a SwingScan YAML config.",
     )
 
     return parser
@@ -79,12 +94,41 @@ def _cmd_version() -> int:
     return 0
 
 
-def _cmd_run(_args: argparse.Namespace) -> int:
-    log.warning(
-        "`swingscan run` is a Stage 0 stub. The end-to-end pipeline lands in Stage 6; "
-        "see CLAUDE.md §5 for progress."
+def _cmd_run(args: argparse.Namespace) -> int:
+    # Deferred imports so `swingscan version` stays fast.
+    from swingscan.config import load_config
+    from swingscan.pipeline import run_pipeline, save_pipeline_result
+
+    cfg = load_config(args.config)
+    input_path = Path(args.input).expanduser().resolve()
+
+    log.info("Running pipeline: %s", input_path)
+    result = run_pipeline(
+        video_path=input_path,
+        config=cfg,
+        club_weights=args.club_weights,
     )
-    return 2
+
+    summary = (
+        f"frames={result.frame_count} "
+        f"pose_low_conf={result.pose.low_confidence_ratio():.1%} "
+        f"club_missing={result.club.missing_ratio:.1%} "
+        f"club_interp={result.club.interpolated_ratio:.1%}"
+    )
+    sys.stdout.write(f"Pipeline complete: {summary}\n")
+
+    if args.output is not None:
+        out_path = Path(args.output).expanduser().resolve()
+        save_pipeline_result(result, out_path)
+        sys.stdout.write(f"Wrote pipeline report to {out_path}\n")
+
+    if args.output_video is not None:
+        log.warning(
+            "--output-video requested but Stage 7 (overlays) is not yet implemented; "
+            "skipping."
+        )
+
+    return 0
 
 
 def _cmd_pose(args: argparse.Namespace) -> int:
