@@ -32,6 +32,10 @@ import logging
 import sys
 from pathlib import Path
 
+_REPO_SRC = Path(__file__).resolve().parents[1] / "src"
+if str(_REPO_SRC) not in sys.path:
+    sys.path.insert(0, str(_REPO_SRC))
+
 from swingscan.compare.pro_bank import SwingLabel, build_pro_bank
 from swingscan.utils.logging import configure_logging
 from swingscan.utils.paths import data_dir

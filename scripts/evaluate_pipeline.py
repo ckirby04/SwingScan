@@ -21,8 +21,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+_REPO_SRC = Path(__file__).resolve().parents[1] / "src"
+if str(_REPO_SRC) not in sys.path:
+    sys.path.insert(0, str(_REPO_SRC))
 
 from swingscan.compare.pro_bank import ProBank, SwingLabel
 from swingscan.config import load_config
