@@ -35,6 +35,7 @@ if str(_REPO_SRC) not in sys.path:
 
 from swingscan.pipeline import PipelineResult, run_pipeline
 from swingscan.utils.logging import configure_logging
+from swingscan.utils.paths import configs_dir, data_dir
 
 _log = logging.getLogger(__name__)
 
@@ -210,6 +211,17 @@ def main(argv: list[str] | None = None) -> int:
 
     pro_bank_path = Path(args.pro_bank).expanduser().resolve() if args.pro_bank else None
     rules_path = Path(args.rules).expanduser().resolve() if args.rules else None
+
+    # Auto-discover the default bank / rules if the user didn't pass them.
+    if pro_bank_path is None:
+        candidate = data_dir() / "pro_bank" / "bank.parquet"
+        if candidate.is_file():
+            pro_bank_path = candidate
+            _log.info("Auto-discovered pro bank at %s", pro_bank_path)
+    if rules_path is None:
+        candidate = configs_dir() / "feedback_rules.yaml"
+        if candidate.is_file():
+            rules_path = candidate
 
     app = _build_app(
         pro_bank_path=pro_bank_path,
