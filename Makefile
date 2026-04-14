@@ -55,10 +55,8 @@ test: $(VENV_PY)  ## Run pytest.
 test-cov: $(VENV_PY)  ## Run pytest with a coverage HTML report.
 	$(VENV_PY) -m pytest --cov-report=html
 
-demo: $(VENV_PY)  ## Launch the Gradio demo (Stage 8+). Placeholder until implemented.
-	@echo "Demo target is a placeholder until Stage 8 lands."
-	@echo "When implemented: $(VENV_PY) scripts/demo_local.py"
-	@exit 1
+demo: $(VENV_PY)  ## Launch the Gradio demo at http://127.0.0.1:7860.
+	$(VENV_PY) scripts/demo_local.py
 
 version: $(VENV_PY)  ## Print the installed swingscan version.
 	$(VENV_PY) -m swingscan.cli version
