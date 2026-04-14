@@ -22,8 +22,13 @@ from swingscan.club.detector import (
     YoloClubDetector,
 )
 from swingscan.club.tracker import ClubTrack, ClubTracker
+from swingscan.compare.diff import SwingDiff, compare_against_bank
+from swingscan.compare.pro_bank import ProBank
 from swingscan.config import SwingScanConfig, load_config
+from swingscan.feedback.render import render_text
+from swingscan.feedback.rules import FeedbackItem, RuleEngine
 from swingscan.io.video import VideoReader
+from swingscan.phases.segmenter import HeuristicSegmenter, PhaseMap
 from swingscan.pose.base import PoseSequence
 from swingscan.pose.mediapipe_backend import MediaPipePoseEstimator
 
@@ -34,10 +39,19 @@ _log = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class PipelineResult:
-    """Combined output of the Stage 2 pipeline: pose + club trajectory."""
+    """Combined output of the pipeline.
+
+    Populated incrementally by each stage — Stage 2 fills pose + club;
+    Stage 4 fills phases; Stage 5 fills the diff; Stage 6 fills the
+    feedback list. Later stages may leave fields ``None`` when the
+    required inputs are unavailable (e.g. no pro bank on disk).
+    """
 
     pose: PoseSequence
     club: ClubTrack
+    phases: PhaseMap | None = None
+    diff: SwingDiff | None = None
+    feedback: tuple[FeedbackItem, ...] = ()
 
     @property
     def frame_count(self) -> int:
@@ -68,6 +82,9 @@ def run_pipeline(
     video_path: Path | str,
     config: SwingScanConfig | None = None,
     club_weights: Path | str | None = None,
+    pro_bank_path: Path | str | None = None,
+    rules_path: Path | str | None = None,
+    handedness: str = "right",
 ) -> PipelineResult:
     """Run Stage 1 + Stage 2 on a single video and return the result.
 
@@ -107,7 +124,7 @@ def run_pipeline(
     track = tracker.track(raw)
 
     _log.info(
-        "Pipeline complete: %d pose frames, %d club entries "
+        "Pose + club complete: %d frames, %d club entries "
         "(%.1f%% missing, %.1f%% interpolated).",
         len(pose_seq),
         len(track),
@@ -115,7 +132,51 @@ def run_pipeline(
         track.interpolated_ratio * 100,
     )
 
-    return PipelineResult(pose=pose_seq, club=track)
+    # Stage 4: phase segmentation (heuristic).
+    phase_map = HeuristicSegmenter().segment(pose_seq) if len(pose_seq) > 0 else None
+
+    # Stage 5 + 6: comparison against a bank + feedback.
+    diff: SwingDiff | None = None
+    feedback: tuple[FeedbackItem, ...] = ()
+    if phase_map is not None and pro_bank_path is not None:
+        try:
+            bank = ProBank.load(pro_bank_path)
+        except FileNotFoundError:
+            _log.warning("Pro bank not found at %s; skipping comparison.", pro_bank_path)
+        else:
+            diff = compare_against_bank(pose_seq, phase_map, bank, handedness=handedness)
+            try:
+                engine = RuleEngine.from_yaml(rules_path)
+            except FileNotFoundError as exc:
+                _log.warning("Feedback rules not found: %s", exc)
+            else:
+                feedback = tuple(engine.evaluate(diff))
+
+    return PipelineResult(
+        pose=pose_seq,
+        club=track,
+        phases=phase_map,
+        diff=diff,
+        feedback=feedback,
+    )
+
+
+def render_report(result: PipelineResult) -> str:
+    """Human-readable summary of the pipeline result."""
+    lines = [
+        f"SwingScan report: {result.frame_count} frames",
+        f"  club: {result.club.missing_ratio:.0%} missing, "
+        f"{result.club.interpolated_ratio:.0%} interpolated",
+    ]
+    if result.phases is not None:
+        lines.append("  phases: " + ", ".join(
+            f"{ev.name}={idx}" for ev, idx in result.phases.events
+        ))
+    if result.diff is not None:
+        lines.append(f"  cohort: {result.diff.cohort_size} pro swings")
+    lines.append("")
+    lines.append(render_text(list(result.feedback)))
+    return "\n".join(lines)
 
 
 def save_pipeline_result(result: PipelineResult, path: Path | str) -> Path:
@@ -129,7 +190,7 @@ def save_pipeline_result(result: PipelineResult, path: Path | str) -> Path:
     out = Path(path).expanduser().resolve()
     out.parent.mkdir(parents=True, exist_ok=True)
 
-    payload = {
+    payload: dict[str, object] = {
         "format": "swingscan_pipeline_v1",
         "pose_summary": {
             "fps": result.pose.fps,
@@ -156,5 +217,9 @@ def save_pipeline_result(result: PipelineResult, path: Path | str) -> Path:
             "club_interpolated_ratio": result.club.interpolated_ratio,
         },
     }
+    if result.phases is not None:
+        payload["phases"] = result.phases.as_dict()
+    if result.feedback:
+        payload["feedback"] = [item.as_dict() for item in result.feedback]
     out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return out

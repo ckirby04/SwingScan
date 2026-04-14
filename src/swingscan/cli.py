@@ -84,6 +84,22 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Optional path to a YOLO club-head weights file. When absent, uses heuristic fallback.",
     )
     run_p.add_argument(
+        "--pro-bank",
+        default=None,
+        help="Optional path to a pro bank parquet. Enables Stage 5/6 comparison + feedback.",
+    )
+    run_p.add_argument(
+        "--rules",
+        default=None,
+        help="Optional path to a feedback rules YAML. Defaults to configs/feedback_rules.yaml.",
+    )
+    run_p.add_argument(
+        "--handedness",
+        default="right",
+        choices=["right", "left"],
+        help="Golfer handedness. Defaults to right.",
+    )
+    run_p.add_argument(
         "--output-video",
         default=None,
         help="Optional path to write an annotated output video (Stage 7+, no-op today).",
@@ -139,7 +155,7 @@ def _cmd_phases(args: argparse.Namespace) -> int:
 def _cmd_run(args: argparse.Namespace) -> int:
     # Deferred imports so `swingscan version` stays fast.
     from swingscan.config import load_config
-    from swingscan.pipeline import run_pipeline, save_pipeline_result
+    from swingscan.pipeline import render_report, run_pipeline, save_pipeline_result
 
     cfg = load_config(args.config)
     input_path = Path(args.input).expanduser().resolve()
@@ -149,15 +165,12 @@ def _cmd_run(args: argparse.Namespace) -> int:
         video_path=input_path,
         config=cfg,
         club_weights=args.club_weights,
+        pro_bank_path=args.pro_bank,
+        rules_path=args.rules,
+        handedness=args.handedness,
     )
 
-    summary = (
-        f"frames={result.frame_count} "
-        f"pose_low_conf={result.pose.low_confidence_ratio():.1%} "
-        f"club_missing={result.club.missing_ratio:.1%} "
-        f"club_interp={result.club.interpolated_ratio:.1%}"
-    )
-    sys.stdout.write(f"Pipeline complete: {summary}\n")
+    sys.stdout.write(render_report(result))
 
     if args.output is not None:
         out_path = Path(args.output).expanduser().resolve()

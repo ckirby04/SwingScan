@@ -29,7 +29,7 @@ def test_cli_run_writes_pipeline_report(
     captured = capsys.readouterr()
 
     assert rc == 0
-    assert "Pipeline complete" in captured.out
+    assert "SwingScan report" in captured.out
     assert out.is_file()
 
     payload = json.loads(out.read_text(encoding="utf-8"))
