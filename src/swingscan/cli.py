@@ -178,10 +178,17 @@ def _cmd_run(args: argparse.Namespace) -> int:
         sys.stdout.write(f"Wrote pipeline report to {out_path}\n")
 
     if args.output_video is not None:
-        log.warning(
-            "--output-video requested but Stage 7 (overlays) is not yet implemented; "
-            "skipping."
+        from swingscan.viz.overlay import render_annotated_video
+
+        video_out = Path(args.output_video).expanduser().resolve()
+        render_annotated_video(
+            source_video=input_path,
+            pose=result.pose,
+            club=result.club,
+            phases=result.phases,
+            out_path=video_out,
         )
+        sys.stdout.write(f"Wrote annotated video to {video_out}\n")
 
     return 0
 
