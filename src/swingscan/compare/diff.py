@@ -42,6 +42,47 @@ _METRIC_NAMES: tuple[str, ...] = (
     "head_movement",
 )
 
+# Metrics whose values are angles in degrees and therefore live on a
+# circle. Comparing them naively breaks at the +/-180 boundary: two
+# swings at +175 and -175 are structurally identical but their
+# arithmetic mean is 0. For these metrics we use a circular mean for
+# cohort central tendency and wrap deltas to [-180, 180].
+_ANGULAR_METRICS: frozenset[str] = frozenset(
+    {
+        "hip_rotation_deg",
+        "shoulder_rotation_deg",
+        "x_factor_deg",
+        "spine_lean_deg",
+        "lead_arm_angle_deg",
+        "wrist_hinge_deg",
+        "lead_knee_flex_deg",
+    }
+)
+
+
+def _circular_mean_deg(values: list[float]) -> float:
+    """Circular mean of angles in degrees. Output is in [-180, 180]."""
+    sin_sum = sum(math.sin(math.radians(v)) for v in values)
+    cos_sum = sum(math.cos(math.radians(v)) for v in values)
+    return math.degrees(math.atan2(sin_sum, cos_sum))
+
+
+def _wrap_signed_deg(x: float) -> float:
+    """Wrap an angle delta to [-180, 180]."""
+    return ((x + 180.0) % 360.0) - 180.0
+
+
+def _circular_stdev_deg(values: list[float], center_deg: float) -> float:
+    """Population-style stdev of angular samples around a given center.
+
+    Computed after wrapping each deviation into [-180, 180] so samples
+    straddling the +/-180 boundary no longer blow the estimate up.
+    """
+    deviations = [_wrap_signed_deg(v - center_deg) for v in values]
+    if len(deviations) < 2:
+        return 0.0
+    return statistics.stdev(deviations)
+
 
 @dataclass(frozen=True, slots=True)
 class MetricDelta:
@@ -177,12 +218,21 @@ def compare_against_bank(
                     )
                 )
                 continue
-            median = statistics.median(cohort)
-            try:
-                stdev = statistics.stdev(cohort)
-            except statistics.StatisticsError:
-                stdev = 0.0
-            delta = amateur_val - median
+            if metric in _ANGULAR_METRICS:
+                # Circular mean is the stable "central tendency" for an
+                # angular distribution. Wrap the delta into [-180, 180]
+                # so wraparound noise (e.g. cohort at +175 vs amateur at
+                # -175) never appears as a spurious 350 degree gap.
+                median = _circular_mean_deg(cohort)
+                delta = _wrap_signed_deg(amateur_val - median)
+                stdev = _circular_stdev_deg(cohort, median)
+            else:
+                median = statistics.median(cohort)
+                try:
+                    stdev = statistics.stdev(cohort)
+                except statistics.StatisticsError:
+                    stdev = 0.0
+                delta = amateur_val - median
             z = 0.0 if stdev < 1e-6 else delta / stdev
             z = max(-10.0, min(10.0, z))
             metric_deltas.append(

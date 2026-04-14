@@ -12,6 +12,7 @@ Later stages add ``phases``, ``compare``, and ``demo`` subcommands.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import logging
 import sys
 from collections.abc import Sequence
@@ -231,8 +232,28 @@ def _cmd_pose(args: argparse.Namespace) -> int:
     return 0
 
 
+def _force_utf8_stdio() -> None:
+    """Reconfigure stdout/stderr to UTF-8 so non-ASCII feedback renders.
+
+    On Windows PowerShell the default console encoding is cp1252, which
+    cannot encode characters used in our feedback templates (em dash,
+    middle dot, degree symbol). Reconfiguring to UTF-8 fixes the
+    rendering without requiring the user to run ``chcp 65001``.
+
+    Python 3.7+ exposes ``sys.stdout.reconfigure``. The attribute is
+    absent on a handful of embedded Python builds, so we defensively
+    swallow that case.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            with contextlib.suppress(OSError, ValueError):
+                reconfigure(encoding="utf-8")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """CLI entry point. Returns a process exit code."""
+    _force_utf8_stdio()
     parser = _build_parser()
     args = parser.parse_args(argv)
     configure_logging(args.log_level)

@@ -1,164 +1,121 @@
-# SwingScan feedback rule set (Stage 6).
-#
-# Each rule fires when the named metric at the named phase crosses a
-# threshold in the specified direction. `message_template` may reference
-# ``{delta:.1f}`` and ``{amateur:.1f}``; at render time the `|` prefix
-# indicates a Python format-spec.
-#
-# Thresholds are expressed as signed deltas from the pro cohort median.
-# Positive direction means "amateur value is greater than cohort."
-# Severity is a coarse 1–3 weight used to rank cues.
-#
-# These are heuristic cues, not coaching certifications. See CLAUDE.md §2
-# and the docstring on FeedbackItem.
-
 rules:
-  - name: insufficient_backswing_turn
-    phase: TOP
-    metric: shoulder_rotation_deg
-    direction: below
-    threshold: -15.0
-    severity: 3
-    message_template: >-
-      Shoulder turn at the top is {delta:.0f}° short of the pro cohort —
-      try to feel a fuller coil.
-
-  - name: excessive_backswing_turn
-    phase: TOP
-    metric: shoulder_rotation_deg
-    direction: above
-    threshold: 15.0
-    severity: 2
-    message_template: >-
-      Shoulder turn at the top is {delta:.0f}° past the cohort —
-      over-rotation can cost control.
-
-  - name: hip_stall_at_impact
-    phase: IMPACT
-    metric: hip_rotation_deg
-    direction: below
-    threshold: -10.0
-    severity: 3
-    message_template: >-
-      Hips are {delta:.0f}° short of the cohort at impact — hip stall
-      costs clubhead speed.
-
-  - name: early_extension_spine_loss
-    phase: IMPACT
-    metric: spine_lean_deg
-    direction: above
-    threshold: 8.0
-    severity: 3
-    message_template: >-
-      Spine lean at impact has straightened {delta:.0f}° relative to
-      the cohort — classic early extension pattern.
-
-  - name: lead_arm_collapse
-    phase: TOP
-    metric: lead_arm_angle_deg
-    direction: below
-    threshold: -15.0
-    severity: 2
-    message_template: >-
-      Lead arm is bent {delta:.0f}° more than the cohort at the top —
-      check for arm collapse at the end of the backswing.
-
-  - name: lead_arm_collapse_mfq
-    phase: MID_BACKSWING
-    metric: lead_arm_angle_deg
-    direction: below
-    threshold: -12.0
-    severity: 2
-    message_template: >-
-      Lead arm is starting to fold early ({delta:.0f}° more bent than
-      the cohort) — try to maintain width in the backswing.
-
-  - name: casting_wrist
-    phase: MID_DOWNSWING
-    metric: wrist_hinge_deg
-    direction: above
-    threshold: 20.0
-    severity: 3
-    message_template: >-
-      Wrist hinge has released {delta:.0f}° earlier than the cohort —
-      casting from the top loses power.
-
-  - name: reverse_pivot_address
-    phase: ADDRESS
-    metric: spine_lean_deg
-    direction: above
-    threshold: 6.0
-    severity: 2
-    message_template: >-
-      Spine is already leaning toward the target at address
-      ({delta:.0f}°) — reverse-pivot risk.
-
-  - name: head_dip
-    phase: IMPACT
-    metric: head_movement
-    direction: above
-    threshold: 0.04
-    severity: 2
-    message_template: >-
-      Head has moved {amateur:.2f} units from address by impact —
-      try to stay centered.
-
-  - name: head_drift_backswing
-    phase: TOP
-    metric: head_movement
-    direction: above
-    threshold: 0.05
-    severity: 2
-    message_template: >-
-      Head is {amateur:.2f} units off from address at the top —
-      looks like a sway.
-
-  - name: knee_flex_lost_top
-    phase: TOP
-    metric: lead_knee_flex_deg
-    direction: above
-    threshold: 15.0
-    severity: 2
-    message_template: >-
-      Lead knee has straightened {delta:.0f}° more than the cohort at
-      the top — maintain flex for a stable base.
-
-  - name: insufficient_x_factor
-    phase: TOP
-    metric: x_factor_deg
-    direction: below
-    threshold: -12.0
-    severity: 2
-    message_template: >-
-      X-factor (shoulders vs hips) is {delta:.0f}° shy of the cohort
-      at the top — cultivate the separation.
-
-  - name: wrist_hinge_lost_top
-    phase: TOP
-    metric: wrist_hinge_deg
-    direction: above
-    threshold: 20.0
-    severity: 2
-    message_template: >-
-      Wrists are {delta:.0f}° less hinged than the cohort at the top —
-      set the club earlier.
-
-  - name: hip_rotation_early_release
-    phase: MID_DOWNSWING
-    metric: hip_rotation_deg
-    direction: below
-    threshold: -12.0
-    severity: 2
-    message_template: >-
-      Hips lag the cohort by {delta:.0f}° mid-downswing — they should
-      be leading the sequence here.
-
-  - name: head_up_finish
-    phase: FINISH
-    metric: head_movement
-    direction: above
-    threshold: 0.08
-    severity: 1
-    message_template: >-
-      Large head drift by finish ({amateur:.2f} units) — fine for
-      balance work; flagged for awareness.
+- name: insufficient_backswing_turn
+  phase: TOP
+  metric: shoulder_rotation_deg
+  direction: below
+  threshold: -58.26
+  severity: 3
+  message_template: Shoulder turn at the top is {delta:.0f}° short of the pro cohort
+    — try to feel a fuller coil.
+- name: excessive_backswing_turn
+  phase: TOP
+  metric: shoulder_rotation_deg
+  direction: above
+  threshold: 58.26
+  severity: 2
+  message_template: Shoulder turn at the top is {delta:.0f}° past the cohort — over-rotation
+    can cost control.
+- name: hip_stall_at_impact
+  phase: IMPACT
+  metric: hip_rotation_deg
+  direction: below
+  threshold: -7.66
+  severity: 3
+  message_template: Hips are {delta:.0f}° short of the cohort at impact — hip stall
+    costs clubhead speed.
+- name: early_extension_spine_loss
+  phase: IMPACT
+  metric: spine_lean_deg
+  direction: above
+  threshold: 9.07
+  severity: 3
+  message_template: Spine lean at impact has straightened {delta:.0f}° relative to
+    the cohort — classic early extension pattern.
+- name: lead_arm_collapse
+  phase: TOP
+  metric: lead_arm_angle_deg
+  direction: below
+  threshold: -57.09
+  severity: 2
+  message_template: Lead arm is bent {delta:.0f}° more than the cohort at the top
+    — check for arm collapse at the end of the backswing.
+- name: lead_arm_collapse_mfq
+  phase: MID_BACKSWING
+  metric: lead_arm_angle_deg
+  direction: below
+  threshold: -33.96
+  severity: 2
+  message_template: Lead arm is starting to fold early ({delta:.0f}° more bent than
+    the cohort) — try to maintain width in the backswing.
+- name: casting_wrist
+  phase: MID_DOWNSWING
+  metric: wrist_hinge_deg
+  direction: above
+  threshold: 25.68
+  severity: 3
+  message_template: Wrist hinge has released {delta:.0f}° earlier than the cohort
+    — casting from the top loses power.
+- name: reverse_pivot_address
+  phase: ADDRESS
+  metric: spine_lean_deg
+  direction: above
+  threshold: 6.17
+  severity: 2
+  message_template: Spine is already leaning toward the target at address ({delta:.0f}°)
+    — reverse-pivot risk.
+- name: head_dip
+  phase: IMPACT
+  metric: head_movement
+  direction: above
+  threshold: 0.07
+  severity: 2
+  message_template: Head has moved {amateur:.2f} units from address by impact — try
+    to stay centered.
+- name: head_drift_backswing
+  phase: TOP
+  metric: head_movement
+  direction: above
+  threshold: 0.07
+  severity: 2
+  message_template: Head is {amateur:.2f} units off from address at the top — looks
+    like a sway.
+- name: knee_flex_lost_top
+  phase: TOP
+  metric: lead_knee_flex_deg
+  direction: above
+  threshold: 10.28
+  severity: 2
+  message_template: Lead knee has straightened {delta:.0f}° more than the cohort at
+    the top — maintain flex for a stable base.
+- name: insufficient_x_factor
+  phase: TOP
+  metric: x_factor_deg
+  direction: below
+  threshold: -36.24
+  severity: 2
+  message_template: X-factor (shoulders vs hips) is {delta:.0f}° shy of the cohort
+    at the top — cultivate the separation.
+- name: wrist_hinge_lost_top
+  phase: TOP
+  metric: wrist_hinge_deg
+  direction: above
+  threshold: 32.15
+  severity: 2
+  message_template: Wrists are {delta:.0f}° less hinged than the cohort at the top
+    — set the club earlier.
+- name: hip_rotation_early_release
+  phase: MID_DOWNSWING
+  metric: hip_rotation_deg
+  direction: below
+  threshold: -23.82
+  severity: 2
+  message_template: Hips lag the cohort by {delta:.0f}° mid-downswing — they should
+    be leading the sequence here.
+- name: head_up_finish
+  phase: FINISH
+  metric: head_movement
+  direction: above
+  threshold: 0.09
+  severity: 1
+  message_template: Large head drift by finish ({amateur:.2f} units) — fine for balance
+    work; flagged for awareness.
