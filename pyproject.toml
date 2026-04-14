@@ -143,7 +143,7 @@ warn_required_dynamic_aliases = true
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
-pythonpath = ["tests/fixtures"]
+pythonpath = ["tests/fixtures", "scripts"]
 markers = [
     "integration: end-to-end tests that exercise the CLI or full pipeline",
 ]
