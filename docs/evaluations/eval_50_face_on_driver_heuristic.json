@@ -1,0 +1,362 @@
+{
+  "format": "swingscan_evaluation_v1",
+  "labels_path": "G:\\SwingScan\\data\\raw\\labels.json",
+  "tolerance": 5,
+  "swings_total": 50,
+  "swings_scored": 50,
+  "pce": 0.095,
+  "pose_complete_ratio": 0.996349715397586,
+  "bank_coverage": 1.0,
+  "per_swing": [
+    {
+      "swing_id": "golfdb_8",
+      "total_frames": 114,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_10",
+      "total_frames": 169,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_14",
+      "total_frames": 113,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_19",
+      "total_frames": 167,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_25",
+      "total_frames": 167,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_29",
+      "total_frames": 152,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_41",
+      "total_frames": 123,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_51",
+      "total_frames": 412,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_60",
+      "total_frames": 135,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_72",
+      "total_frames": 126,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_74",
+      "total_frames": 199,
+      "events_correct": 3,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_102",
+      "total_frames": 136,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_127",
+      "total_frames": 155,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_150",
+      "total_frames": 85,
+      "events_correct": 2,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_152",
+      "total_frames": 184,
+      "events_correct": 3,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_156",
+      "total_frames": 97,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_160",
+      "total_frames": 116,
+      "events_correct": 1,
+      "pose_complete_ratio": 0.9827586206896551,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_169",
+      "total_frames": 91,
+      "events_correct": 2,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_175",
+      "total_frames": 221,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_176",
+      "total_frames": 421,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_187",
+      "total_frames": 727,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_195",
+      "total_frames": 325,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_204",
+      "total_frames": 381,
+      "events_correct": 0,
+      "pose_complete_ratio": 0.9973753280839895,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_208",
+      "total_frames": 249,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_223",
+      "total_frames": 163,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_224",
+      "total_frames": 461,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_229",
+      "total_frames": 145,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_231",
+      "total_frames": 270,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_237",
+      "total_frames": 144,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_244",
+      "total_frames": 322,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_248",
+      "total_frames": 128,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_256",
+      "total_frames": 377,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_257",
+      "total_frames": 191,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_268",
+      "total_frames": 166,
+      "events_correct": 1,
+      "pose_complete_ratio": 0.9939759036144579,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_273",
+      "total_frames": 203,
+      "events_correct": 5,
+      "pose_complete_ratio": 0.8669950738916257,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_275",
+      "total_frames": 153,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_276",
+      "total_frames": 142,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_277",
+      "total_frames": 415,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_283",
+      "total_frames": 238,
+      "events_correct": 1,
+      "pose_complete_ratio": 0.9957983193277311,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_285",
+      "total_frames": 101,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_287",
+      "total_frames": 220,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_297",
+      "total_frames": 189,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_298",
+      "total_frames": 125,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_302",
+      "total_frames": 206,
+      "events_correct": 1,
+      "pose_complete_ratio": 0.9805825242718447,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_328",
+      "total_frames": 152,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_336",
+      "total_frames": 123,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_338",
+      "total_frames": 163,
+      "events_correct": 1,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_342",
+      "total_frames": 330,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_351",
+      "total_frames": 520,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    },
+    {
+      "swing_id": "golfdb_359",
+      "total_frames": 428,
+      "events_correct": 0,
+      "pose_complete_ratio": 1.0,
+      "bank_match": true
+    }
+  ]
+}
