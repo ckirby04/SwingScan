@@ -60,6 +60,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Optional path to a SwingScan YAML config. Defaults to configs/default.yaml if present.",
     )
 
+    phases_p = subparsers.add_parser(
+        "phases",
+        help="Segment a swing video into the 8 canonical events.",
+    )
+    phases_p.add_argument("--input", required=True, help="Path to a swing video.")
+    phases_p.add_argument("--output", required=True, help="Output JSON path for the phase map.")
+    phases_p.add_argument("--config", default=None)
+
     run_p = subparsers.add_parser(
         "run",
         help="Run the pipeline on a single swing video (Stage 2: pose + club).",
@@ -91,6 +99,40 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def _cmd_version() -> int:
     sys.stdout.write(f"swingscan {__version__}\n")
+    return 0
+
+
+def _cmd_phases(args: argparse.Namespace) -> int:
+    import json as _json
+
+    from swingscan.config import load_config
+    from swingscan.io.video import VideoReader
+    from swingscan.phases.segmenter import HeuristicSegmenter
+    from swingscan.pose.mediapipe_backend import MediaPipePoseEstimator
+
+    cfg = load_config(args.config)
+    input_path = Path(args.input).expanduser().resolve()
+    output_path = Path(args.output).expanduser().resolve()
+
+    log.info("Segmenting phases: %s -> %s", input_path, output_path)
+    with (
+        VideoReader(input_path) as video,
+        MediaPipePoseEstimator(cfg.pose) as pose_est,
+    ):
+        pose_seq = pose_est.estimate_video(video)
+
+    segmenter = HeuristicSegmenter()
+    phase_map = segmenter.segment(pose_seq)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "format": "swingscan_phases_v1",
+        "source": str(input_path),
+        "frame_count": len(pose_seq),
+        "events": phase_map.as_dict(),
+    }
+    output_path.write_text(_json.dumps(payload, indent=2), encoding="utf-8")
+    sys.stdout.write(f"Wrote phase map to {output_path}\n")
     return 0
 
 
@@ -179,6 +221,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _cmd_version()
     if args.command == "pose":
         return _cmd_pose(args)
+    if args.command == "phases":
+        return _cmd_phases(args)
     if args.command == "run":
         return _cmd_run(args)
 
