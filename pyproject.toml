@@ -129,6 +129,9 @@ module = [
     "scipy.*",
     "sklearn",
     "sklearn.*",
+    "pyarrow",
+    "pyarrow.*",
+    "mediapipe",
 ]
 ignore_missing_imports = true
 
@@ -140,6 +143,10 @@ warn_required_dynamic_aliases = true
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
+pythonpath = ["tests/fixtures"]
+markers = [
+    "integration: end-to-end tests that exercise the CLI or full pipeline",
+]
 addopts = [
     "-ra",
     "--strict-markers",
