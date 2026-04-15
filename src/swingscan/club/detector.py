@@ -5,10 +5,11 @@ Two backends are provided:
 * :class:`YoloClubDetector` — thin wrapper around an ultralytics YOLO
   model fine-tuned for club-head detection. Requires a weights file at
   ``models/club_yolo.pt`` (or a caller-provided path).
-* :class:`HeuristicClubDetector` — geometric fallback that extrapolates
-  a club-head position from wrist positions in a :class:`PoseFrame`.
-  Requires no weights. This is the Stage 2 "no external downloads"
-  backend mandated by ``CLAUDE.md`` §5.2.
+* :class:`HeuristicClubDetector` — pose-derived geometric backend
+  that uses MediaPipe's hand finger landmarks to estimate shaft
+  direction at the grip, and forearm length to scale club length.
+  Requires no weights; the default backend when no YOLO checkpoint
+  is available.
 
 Both implement the :class:`ClubDetector` protocol and return a
 :class:`ClubDetection` per frame. See
@@ -200,9 +201,7 @@ class HeuristicClubDetector:
             source="heuristic",
         )
 
-    def _shaft_direction(
-        self, kp: NDArray[np.float32]
-    ) -> tuple[float, float, float]:
+    def _shaft_direction(self, kp: NDArray[np.float32]) -> tuple[float, float, float]:
         """Visibility-weighted wrist->finger vector for both hands."""
         dir_x = 0.0
         dir_y = 0.0

@@ -1,5 +1,7 @@
-"""Pro-reference bank loading and per-phase swing comparison.
+"""Pro-reference bank + per-phase swing comparison.
 
-Stage 3 builds the pro bank; Stage 5 adds the :class:`SwingDiff` comparison
-primitive. Empty in Stage 0.
+:mod:`swingscan.compare.pro_bank` holds the ``ProBank`` store and the
+``SwingLabel`` / ``ProSwing`` data classes.
+:mod:`swingscan.compare.diff` produces a ``SwingDiff`` — per-phase,
+per-metric deltas and circular-aware z-scores against a bank cohort.
 """

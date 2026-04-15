@@ -1,11 +1,11 @@
 """Deterministic seeding for reproducible runs.
 
-Seeds Python's ``random`` and ``numpy.random``. If ``torch`` is installed
-(from the Stage 1+ ``pipeline`` extra), also seeds torch's CPU and CUDA
-RNGs. The torch branch is guarded so Stage 0 environments without torch
-still work.
+Seeds Python's ``random`` and ``numpy.random``. If ``torch`` is
+importable (it is when the ``pipeline`` extra is installed), also
+seeds torch's CPU and CUDA RNGs. The torch branch is guarded so the
+helper still runs in environments that only have the core extras.
 
-Per ``CLAUDE.md`` §1.6, every training or evaluation script must call
+Every training or evaluation script should call
 :func:`seed_everything` before doing any random work.
 """
 

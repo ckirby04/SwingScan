@@ -138,29 +138,37 @@ When the labels file is missing, the report still writes but with a
 
 ## Runtime flow
 
-1. `cli.py` parses arguments and calls into either `_cmd_pose`,
-   `_cmd_phases`, or `_cmd_run`.
+1. `cli.py` parses arguments and calls into `_cmd_pose`, `_cmd_phases`,
+   or `_cmd_run` (the most common entry point).
 2. `pipeline.run_pipeline()` opens a `VideoReader`, constructs a
-   `MediaPipePoseEstimator`, runs `estimate_video()` → `PoseSequence`.
-3. If `--club-weights` is supplied and the file exists, a
-   `YoloClubDetector` is constructed; otherwise the pipeline falls
-   back to `HeuristicClubDetector`. Either way the result is a list
-   of `ClubDetection`, one per frame.
+   `MediaPipePoseEstimator`, and runs `estimate_video()` to produce a
+   `PoseSequence`.
+3. **Club detection.** If `--club-weights` is supplied and the file
+   exists, a `YoloClubDetector` is used; otherwise the pipeline falls
+   back to `HeuristicClubDetector`, which derives shaft direction from
+   MediaPipe's hand finger landmarks and scales club length by forearm
+   length. The result is one `ClubDetection` per frame.
 4. `ClubTracker.track()` produces a smoothed `ClubTrack` with
-   gap-filled entries (≤ 3 frames).
-5. `HeuristicSegmenter.segment()` emits a `PhaseMap` from the pose
-   sequence (wrist y minimum for top, wrist speed argmax for impact,
-   midpoints for the intermediates).
-6. If `--pro-bank` was supplied, `ProBank.load()` reads the parquet,
-   `compare.diff.compare_against_bank()` produces a `SwingDiff`, and
-   `RuleEngine.from_yaml(...).evaluate(diff)` produces a sorted list
-   of `FeedbackItem`.
+   short-gap linear interpolation (≤ 3 frames) and causal exponential
+   smoothing.
+5. **Phase segmentation.** If SwingNet weights are present at
+   `models/swingnet_1800.pth.tar` (or supplied via `--swingnet-weights`),
+   `SwingNetSegmenter` runs the vendored upstream model and picks the
+   8 event frames from per-frame 9-class softmax. Without weights the
+   pipeline falls back to `HeuristicSegmenter` (wrist y minimum for
+   top, wrist speed argmax for impact, midpoints for intermediates).
+6. **Cohort comparison.** If `--pro-bank` was supplied, `ProBank.load()`
+   reads the parquet, `compare.diff.compare_against_bank()` produces
+   a `SwingDiff` with circular-aware central tendency and z-scores,
+   and `RuleEngine.from_yaml(...).evaluate(diff)` returns a
+   severity-ordered list of `FeedbackItem`.
 7. `pipeline.save_pipeline_result()` writes the JSON report above,
    `pipeline.render_report()` prints the text summary, and
    `viz.overlay.render_annotated_video()` writes the annotated mp4
-   (when `--output-video` is set).
+   when `--output-video` is set (the club trail is hidden by default;
+   pass `--draw-club` to include it).
 
 Every step's failure mode is covered by an error-path test in
-`tests/` — the pipeline does not silently fall back; it logs a
+`tests/`. The pipeline does not silently fall back — it logs a
 WARNING when it chooses a degraded backend and skips downstream
-stages that need the missing input.
+stages that need missing inputs.

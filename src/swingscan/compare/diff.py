@@ -2,7 +2,7 @@
 
 Consumes a :class:`SwingMetrics` for the amateur's swing plus a
 :class:`ProBank` (filtered by view/handedness/club) and produces a
-:class:`SwingDiff` that Stage 6 feedback rules read.
+:class:`SwingDiff` that the feedback rule engine reads.
 
 For each phase and each metric, the diff records:
 

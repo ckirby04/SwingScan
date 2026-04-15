@@ -2,9 +2,9 @@
 
 A :class:`ProBank` stores a small number of pose snapshots per swing —
 one at each of the 8 canonical events — along with metadata (swing id,
-view, handedness, club). This is deliberately compact: full per-frame
-trajectories live in parquet files next to each video and are only
-loaded on demand by Stage 5 comparison code.
+view, handedness, club). This is deliberately compact: the full per-
+frame pose sequences live in separate parquet files and are never
+loaded into the bank itself.
 
 Schema (parquet):
 

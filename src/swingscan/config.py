@@ -1,9 +1,6 @@
 """Typed configuration models loaded from YAML under ``configs/``.
 
-All runtime configuration flows through :class:`SwingScanConfig`. Later
-stages extend the nested models (pose backends, phase segmenter, feedback
-rules, demo settings) — Stage 0 only ships the top-level skeleton so the
-smoke test and type checker stay green.
+All runtime configuration flows through :class:`SwingScanConfig`.
 
 Load flow::
 
@@ -39,8 +36,8 @@ class LoggingConfig(BaseModel):
 class PoseConfig(BaseModel):
     """Pose-backend selection and confidence thresholds.
 
-    Stage 0 only declares the schema. Stage 1 wires these values into the
-    MediaPipe BlazePose backend.
+    The ``min_detection_confidence`` and ``min_tracking_confidence``
+    values are forwarded directly to MediaPipe BlazePose.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -68,9 +65,9 @@ def load_config(path: Path | str | None = None) -> SwingScanConfig:
 
     Args:
         path: Path to a YAML config. When ``None``, loads
-            ``configs/default.yaml`` from the repo root; if that file is
-            absent, returns a default-constructed config so that Stage 0
-            callers don't need to ship a config file.
+            ``configs/default.yaml`` from the repo root; if that file
+            is absent, returns a default-constructed config so callers
+            don't need to ship a config file to use the package.
 
     Returns:
         A validated :class:`SwingScanConfig` instance.

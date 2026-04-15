@@ -5,8 +5,9 @@ each frame of the source video. Writes an mp4 using OpenCV's
 ``VideoWriter`` with a preferred-codec chain (``mp4v`` first, then
 ``avc1``, then ``MJPG`` as a last resort).
 
-Stage 7 goal: given a `PipelineResult` and the original source video,
-produce a watchable annotated output in under 2x real-time on CPU.
+Given a :class:`~swingscan.pipeline.PipelineResult` and the original
+source video, produces a watchable annotated output in well under 2x
+real-time on CPU for typical consumer clips.
 """
 
 from __future__ import annotations

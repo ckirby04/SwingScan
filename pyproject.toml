@@ -4,26 +4,36 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "swingscan"
-version = "0.0.1"
-description = "Computer-vision pipeline that extracts pose, segments phases, and returns biomechanical feedback for amateur golf swings."
+version = "0.1.0"
+description = "Video-in, coaching-out. SwingScan runs MediaPipe pose + SwingNet phase segmentation against a GolfDB-derived pro reference bank and returns plain-English swing feedback."
 readme = "README.md"
 requires-python = "==3.11.*"
 license = { text = "MIT" }
 authors = [{ name = "SwingScan contributors" }]
-keywords = ["golf", "pose-estimation", "computer-vision", "biomechanics"]
+keywords = [
+    "golf",
+    "swing-analysis",
+    "pose-estimation",
+    "computer-vision",
+    "biomechanics",
+    "mediapipe",
+    "swingnet",
+]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
     "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-# Core dependencies kept intentionally light so Stage 0 bootstrap installs
-# fast. Heavy ML deps (torch, mediapipe, ultralytics, gradio) live in the
-# `pipeline` extra and are required from Stage 1 onward. See
-# docs/decisions/001-dependency-extras.md for the rationale.
+# Core dependencies kept intentionally light so a cold `pip install`
+# completes fast. Heavy ML deps (torch, mediapipe, ultralytics, gradio)
+# live in the `pipeline` extra. See docs/decisions/001-dependency-extras.md
+# for the rationale.
 dependencies = [
     "numpy==1.26.4",
     "pandas==2.2.2",

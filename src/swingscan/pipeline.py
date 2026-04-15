@@ -1,11 +1,13 @@
 """Top-level pipeline orchestration.
 
-Stage 2 introduces this module to stitch together pose extraction and
-club-head tracking. Later stages append phase segmentation, metrics,
-comparison, and feedback — each added behind its own flag so earlier
-stages can be exercised in isolation.
+Stitches pose extraction, club-head tracking, phase segmentation,
+cohort comparison, and feedback into a single :class:`PipelineResult`.
+Each step skips gracefully when its input is missing: no pro bank
+means no diff means no feedback, but the pose + club + phases still
+flow through unchanged.
 
-The CLI's ``swingscan run`` subcommand dispatches here.
+The CLI's ``swingscan run`` subcommand and the Gradio demo app both
+dispatch here.
 """
 
 from __future__ import annotations
@@ -39,12 +41,12 @@ _log = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class PipelineResult:
-    """Combined output of the pipeline.
+    """Combined output of the end-to-end pipeline.
 
-    Populated incrementally by each stage — Stage 2 fills pose + club;
-    Stage 4 fills phases; Stage 5 fills the diff; Stage 6 fills the
-    feedback list. Later stages may leave fields ``None`` when the
-    required inputs are unavailable (e.g. no pro bank on disk).
+    ``pose`` and ``club`` are always populated. ``phases`` is populated
+    whenever the pose sequence is non-empty. ``diff`` and ``feedback``
+    are populated only when ``pro_bank_path`` was supplied to
+    :func:`run_pipeline` and the bank loaded successfully.
     """
 
     pose: PoseSequence
@@ -107,18 +109,32 @@ def run_pipeline(
     swingnet_weights: Path | str | None = None,
     handedness: str = "right",
 ) -> PipelineResult:
-    """Run Stage 1 + Stage 2 on a single video and return the result.
+    """Run the end-to-end pipeline on a single video.
 
     Args:
         video_path: Path to the source swing video.
         config: Optional :class:`SwingScanConfig`. When ``None``, the
             default config is loaded via :func:`load_config`.
-        club_weights: Optional path to a trained YOLO weights file. When
-            absent or the path is missing, the heuristic backend is used.
+        club_weights: Optional path to a trained YOLO club weights
+            file. When absent or unreadable, falls back to the
+            pose-derived :class:`HeuristicClubDetector`.
+        pro_bank_path: Optional path to a ``ProBank`` parquet. When
+            supplied, enables cohort comparison and coach-voice
+            feedback.
+        rules_path: Optional override for the feedback rules YAML.
+            Defaults to ``configs/feedback_rules.yaml``.
+        swingnet_weights: Optional path to a SwingNet checkpoint.
+            When supplied and loadable, replaces the heuristic phase
+            segmenter with real SwingNet inference.
+        handedness: ``"right"`` or ``"left"``. Propagated through the
+            metrics module so lead-arm / lead-knee lookups are
+            handedness-aware.
 
     Returns:
-        A :class:`PipelineResult` with pose + club outputs. Frame counts
-        match: ``len(result.pose) == len(result.club)``.
+        A :class:`PipelineResult`. ``len(result.pose) == len(result.club)``
+        always holds; ``phases`` is populated whenever the pose sequence
+        is non-empty; ``diff`` and ``feedback`` are populated only when
+        ``pro_bank_path`` was supplied and the bank loaded.
     """
     cfg = config or load_config()
 
@@ -153,14 +169,15 @@ def run_pipeline(
         track.interpolated_ratio * 100,
     )
 
-    # Stage 4: phase segmentation. Prefer SwingNet when weights are
-    # supplied; fall back to the wrist-velocity heuristic otherwise.
+    # Phase segmentation: prefer SwingNet when weights are supplied,
+    # fall back to the wrist-velocity heuristic otherwise.
     phase_map: PhaseMap | None = None
     if len(pose_seq) > 0:
         segmenter, _ = _build_segmenter(swingnet_weights)
         phase_map = segmenter.segment(pose_seq)
 
-    # Stage 5 + 6: comparison against a bank + feedback.
+    # Cohort comparison + rule-engine feedback — only runs when a
+    # pro bank was supplied.
     diff: SwingDiff | None = None
     feedback: tuple[FeedbackItem, ...] = ()
     if phase_map is not None and pro_bank_path is not None:
@@ -207,10 +224,11 @@ def render_report(result: PipelineResult) -> str:
 def save_pipeline_result(result: PipelineResult, path: Path | str) -> Path:
     """Write a pipeline result to a JSON report.
 
-    The report contains pose metadata (not the full per-frame keypoints —
-    those belong in the parquet saved by ``swingscan pose``), the full
-    club trajectory, and a tiny summary block. It is intended for Stage 2
-    smoke inspection; later stages write richer artifacts.
+    The report contains pose metadata (not the full per-frame
+    keypoints — those belong in the parquet saved by
+    ``swingscan pose``), the full club trajectory, the phase map,
+    and the ordered feedback list. Schema is documented in
+    ``docs/pipeline.md``.
     """
     out = Path(path).expanduser().resolve()
     out.parent.mkdir(parents=True, exist_ok=True)

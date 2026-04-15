@@ -1,6 +1,9 @@
 """Feedback rule engine and human-readable renderer.
 
-Stage 6 introduces a YAML-driven rule engine that converts a
-:class:`SwingDiff` into a prioritized list of coaching cues. Empty in
-Stage 0.
+:mod:`swingscan.feedback.rules` loads ``configs/feedback_rules.yaml``,
+evaluates each rule against a ``SwingDiff``, and emits sorted
+``FeedbackItem`` objects. :mod:`swingscan.feedback.render` turns that
+list into a plain-text coaching report or a JSON payload. The shipped
+rules speak in plain coach voice — see the YAML for the
+problem/feel/drill template used by every rule.
 """

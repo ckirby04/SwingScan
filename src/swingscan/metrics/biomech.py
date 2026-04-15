@@ -1,13 +1,13 @@
 """Composite biomechanical metrics computed across phases.
 
-These are the per-swing numbers that Stage 6 feedback rules and Stage 9
-evaluation scripts read. Each function takes a ``PoseSequence`` plus a
-``PhaseMap`` and returns a small dict.
+These are the per-swing numbers that the feedback rule engine and
+the evaluation harness read. :func:`compute_swing_metrics` takes a
+``PoseSequence`` plus a ``PhaseMap`` and returns :class:`SwingMetrics`
+— per-event :class:`PhaseMetrics` plus a couple of whole-swing
+summaries (backswing tempo, total head drift).
 
-Kept intentionally simple: V1 uses image-normalized keypoints for every
-calculation. Stage 5 does not do any world-space biomechanics — the
-consumer-video cost/benefit isn't favorable until a Stage 9 evaluation
-run proves otherwise.
+Everything here works in image-normalized 2D keypoints. A proper
+3D-lifted biomech module is V2 roadmap work.
 """
 
 from __future__ import annotations

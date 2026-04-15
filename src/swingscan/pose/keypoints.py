@@ -120,8 +120,9 @@ RIGHT_SIDE: Final[tuple[Joint, ...]] = (
     Joint.RIGHT_ANKLE,
 )
 
-# The "core" joints actually used by most biomech metrics — head+fingers+
-# toes get excluded. Exposed so Stage 5 can iterate a stable subset.
+# The "core" joints used by most biomech metrics — head, fingers,
+# and toes are excluded. Exposed so downstream metric code can
+# iterate a stable subset.
 CORE_JOINTS: Final[tuple[Joint, ...]] = (
     *SHOULDERS,
     *ELBOWS,

@@ -20,13 +20,15 @@ def test_cli_version_command(capsys: pytest.CaptureFixture[str]) -> None:
     captured = capsys.readouterr()
     assert rc == 0
     assert captured.out.startswith("swingscan ")
-    assert "0.0.1" in captured.out
+    from swingscan import __version__
+
+    assert __version__ in captured.out
 
 
 def test_cli_run_errors_on_missing_input() -> None:
-    # Stage 2 wired `run` to the real pipeline. Passing a path that
-    # doesn't exist should surface a FileNotFoundError (not a silent
-    # success or a stub exit code).
+    # `run` dispatches into the real pipeline, so passing a path that
+    # doesn't exist should surface a FileNotFoundError rather than
+    # silently returning zero.
     from swingscan.cli import main
 
     with pytest.raises(FileNotFoundError):

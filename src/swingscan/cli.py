@@ -2,11 +2,14 @@
 
 Subcommands:
 
-    swingscan version                    Print the installed package version.
-    swingscan pose   --input X --output Y  Run pose extraction on a video.
-    swingscan run    --input X           End-to-end pipeline stub (Stage 6+).
+    swingscan version                        Print the package version.
+    swingscan pose   --input X --output Y    Pose extraction only.
+    swingscan phases --input X --output Y    Phase segmentation only.
+    swingscan run    --input X [...]         End-to-end pipeline + report.
 
-Later stages add ``phases``, ``compare``, and ``demo`` subcommands.
+The ``run`` subcommand is the main entry point: pose -> club ->
+phases -> (optional) cohort diff -> (optional) coach-voice feedback
+-> (optional) annotated video.
 """
 
 from __future__ import annotations
@@ -71,7 +74,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     run_p = subparsers.add_parser(
         "run",
-        help="Run the pipeline on a single swing video (Stage 2: pose + club).",
+        help="Run the end-to-end pipeline on a single swing video.",
     )
     run_p.add_argument("--input", required=True, help="Path to a swing video.")
     run_p.add_argument(
@@ -87,7 +90,11 @@ def _build_parser() -> argparse.ArgumentParser:
     run_p.add_argument(
         "--pro-bank",
         default=None,
-        help="Optional path to a pro bank parquet. Enables Stage 5/6 comparison + feedback.",
+        help=(
+            "Optional path to a pro bank parquet. Enables cohort "
+            "comparison and coach-voice feedback. Auto-discovered at "
+            "data/pro_bank/bank.parquet if present."
+        ),
     )
     run_p.add_argument(
         "--rules",
