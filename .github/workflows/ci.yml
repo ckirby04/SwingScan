@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: lint + typecheck + test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.9"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install system ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Upgrade pip toolchain
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      # The `[pipeline]` extra pulls ~4 GB of wheels (torch, mediapipe,
+      # opencv, ultralytics, gradio). Install both extras so lint +
+      # typecheck can see the real imports and tests can run against
+      # the full pipeline.
+      - name: Install project with dev + pipeline extras
+        run: python -m pip install -e ".[dev,pipeline]"
+
+      - name: Ruff lint
+        run: python -m ruff check src tests scripts
+
+      - name: Ruff format (check only)
+        run: python -m ruff format --check src tests scripts
+
+      - name: Mypy strict
+        run: python -m mypy
+
+      - name: Pytest
+        run: python -m pytest --cov-report=term-missing
