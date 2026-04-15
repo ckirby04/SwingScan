@@ -78,9 +78,7 @@ def test_segmenter_handles_zero_visibility_fallback() -> None:
                 world_keypoints=empty_pose_array(),
             )
         )
-    pose = PoseSequence(
-        frames=tuple(frames), fps=30.0, width=160, height=160, duration_s=20 / 30
-    )
+    pose = PoseSequence(frames=tuple(frames), fps=30.0, width=160, height=160, duration_s=20 / 30)
     pmap = HeuristicSegmenter().segment(pose)
     # All 8 events present, in strict temporal order, covering the clip.
     assert pmap.is_monotonic()

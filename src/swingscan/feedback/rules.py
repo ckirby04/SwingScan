@@ -139,9 +139,8 @@ class RuleEngine:
                 continue
 
             signed_delta = delta.delta
-            fires = (
-                (rule.direction == "above" and signed_delta >= rule.threshold)
-                or (rule.direction == "below" and signed_delta <= rule.threshold)
+            fires = (rule.direction == "above" and signed_delta >= rule.threshold) or (
+                rule.direction == "below" and signed_delta <= rule.threshold
             )
             if not fires:
                 continue

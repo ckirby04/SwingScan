@@ -58,8 +58,7 @@ class PhaseMap:
 
 @runtime_checkable
 class PhaseSegmenter(Protocol):
-    def segment(self, pose: PoseSequence) -> PhaseMap:
-        ...
+    def segment(self, pose: PoseSequence) -> PhaseMap: ...
 
 
 class HeuristicSegmenter:

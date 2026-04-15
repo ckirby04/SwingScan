@@ -79,7 +79,9 @@ def _metrics_for_frame(
         spine_lean_deg=angles.spine_lean_deg(frame),
         lead_arm_angle_deg=angles.lead_arm_straightness_deg(frame, handedness),
         wrist_hinge_deg=angles.wrist_hinge_deg(frame),
-        lead_knee_flex_deg=angles.knee_flex_deg(frame, "left" if handedness == "right" else "right"),
+        lead_knee_flex_deg=angles.knee_flex_deg(
+            frame, "left" if handedness == "right" else "right"
+        ),
         head_movement=angles.head_movement_px(frame, reference),
     )
 

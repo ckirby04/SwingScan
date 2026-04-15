@@ -77,23 +77,36 @@ def draw_skeleton(
         vb = float(pose.image_keypoints[b.value, 3])
         if va < min_visibility or vb < min_visibility:
             continue
-        pa = _ip((h, w), float(pose.image_keypoints[a.value, 0]),
-                 float(pose.image_keypoints[a.value, 1]))
-        pb = _ip((h, w), float(pose.image_keypoints[b.value, 0]),
-                 float(pose.image_keypoints[b.value, 1]))
+        pa = _ip(
+            (h, w), float(pose.image_keypoints[a.value, 0]), float(pose.image_keypoints[a.value, 1])
+        )
+        pb = _ip(
+            (h, w), float(pose.image_keypoints[b.value, 0]), float(pose.image_keypoints[b.value, 1])
+        )
         cv2.line(canvas, pa, pb, _LINE_COLOR, 2)
 
-    for joint in (Joint.LEFT_SHOULDER, Joint.RIGHT_SHOULDER,
-                  Joint.LEFT_ELBOW, Joint.RIGHT_ELBOW,
-                  Joint.LEFT_WRIST, Joint.RIGHT_WRIST,
-                  Joint.LEFT_HIP, Joint.RIGHT_HIP,
-                  Joint.LEFT_KNEE, Joint.RIGHT_KNEE,
-                  Joint.LEFT_ANKLE, Joint.RIGHT_ANKLE):
+    for joint in (
+        Joint.LEFT_SHOULDER,
+        Joint.RIGHT_SHOULDER,
+        Joint.LEFT_ELBOW,
+        Joint.RIGHT_ELBOW,
+        Joint.LEFT_WRIST,
+        Joint.RIGHT_WRIST,
+        Joint.LEFT_HIP,
+        Joint.RIGHT_HIP,
+        Joint.LEFT_KNEE,
+        Joint.RIGHT_KNEE,
+        Joint.LEFT_ANKLE,
+        Joint.RIGHT_ANKLE,
+    ):
         v = float(pose.image_keypoints[joint.value, 3])
         if v < min_visibility:
             continue
-        p = _ip((h, w), float(pose.image_keypoints[joint.value, 0]),
-                float(pose.image_keypoints[joint.value, 1]))
+        p = _ip(
+            (h, w),
+            float(pose.image_keypoints[joint.value, 0]),
+            float(pose.image_keypoints[joint.value, 1]),
+        )
         cv2.circle(canvas, p, 3, _POINT_COLOR, -1)
 
 

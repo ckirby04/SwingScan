@@ -117,9 +117,7 @@ class SwingDiff:
                 return p
         return None
 
-    def significant_items(
-        self, z_threshold: float = 1.5
-    ) -> list[tuple[str, MetricDelta]]:
+    def significant_items(self, z_threshold: float = 1.5) -> list[tuple[str, MetricDelta]]:
         """Return a list of (event_name, MetricDelta) for all metrics whose
         absolute z-score exceeds ``z_threshold``.
         """
@@ -160,10 +158,7 @@ def _compute_probank_metrics(bank: ProBank) -> dict[str, SwingMetrics]:
     """
     out: dict[str, SwingMetrics] = {}
     for swing in bank:
-        events = [
-            (SwingEvent[name], i)
-            for i, name in enumerate(swing.event_names)
-        ]
+        events = [(SwingEvent[name], i) for i, name in enumerate(swing.event_names)]
         pm = PhaseMap(events=tuple(events))
         # Minimal PoseSequence: 8 frames, fps=30, dimensions from
         # whatever metadata we have (kept abstract because these are

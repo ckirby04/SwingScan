@@ -27,9 +27,7 @@ def test_evaluate_with_empty_labels_writes_no_data_report(tmp_path: Path) -> Non
     assert payload["swings_total"] == 0
 
 
-def test_evaluate_on_synthetic_fixture(
-    sample_swing_path: Path, tmp_path: Path
-) -> None:
+def test_evaluate_on_synthetic_fixture(sample_swing_path: Path, tmp_path: Path) -> None:
     labels = tmp_path / "labels.json"
     labels.write_text(
         json.dumps(

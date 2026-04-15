@@ -71,6 +71,7 @@ def torso_length(frame: PoseFrame) -> float:
 
 def hip_rotation_deg(frame: PoseFrame, reference: PoseFrame) -> float:
     """Change in hip-line orientation relative to ``reference`` (typically address)."""
+
     def hip_vec(f: PoseFrame) -> NDArray[Any]:
         v = _pt(f, Joint.RIGHT_HIP) - _pt(f, Joint.LEFT_HIP)
         return np.asarray(v)
@@ -80,6 +81,7 @@ def hip_rotation_deg(frame: PoseFrame, reference: PoseFrame) -> float:
 
 def shoulder_rotation_deg(frame: PoseFrame, reference: PoseFrame) -> float:
     """Change in shoulder-line orientation relative to ``reference``."""
+
     def sh_vec(f: PoseFrame) -> NDArray[Any]:
         v = _pt(f, Joint.RIGHT_SHOULDER) - _pt(f, Joint.LEFT_SHOULDER)
         return np.asarray(v)
@@ -163,6 +165,4 @@ def head_movement_px(frame: PoseFrame, reference: PoseFrame) -> float:
     keep the legacy "_px" suffix because consumers often think in
     pixels).
     """
-    return float(
-        np.linalg.norm(_pt(frame, Joint.NOSE) - _pt(reference, Joint.NOSE))
-    )
+    return float(np.linalg.norm(_pt(frame, Joint.NOSE) - _pt(reference, Joint.NOSE)))

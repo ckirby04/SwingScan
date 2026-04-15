@@ -175,9 +175,7 @@ class VideoReader(AbstractContextManager["VideoReader"]):
             rotation = meta_rot % 360 if meta_rot > 0 else 0
 
         if rotation not in (0, 90, 180, 270):
-            _log.warning(
-                "Unexpected rotation %s° on %s; ignoring.", rotation, self._path
-            )
+            _log.warning("Unexpected rotation %s° on %s; ignoring.", rotation, self._path)
             rotation = 0
 
         # After rotation, width/height may swap.

@@ -157,16 +157,14 @@ def load_pose_sequence_parquet(path: Path | str) -> PoseSequence:
 
     table = pq.read_table(src)
     schema_meta = table.schema.metadata or {}
-    meta = {
-        k.decode("utf-8"): v.decode("utf-8") for k, v in schema_meta.items()
-    }
+    meta = {k.decode("utf-8"): v.decode("utf-8") for k, v in schema_meta.items()}
 
     if meta.get("swingscan_format") != "pose_sequence_v1":
-        raise ValueError(
-            f"{src}: missing or unrecognized swingscan_format in parquet metadata."
-        )
+        raise ValueError(f"{src}: missing or unrecognized swingscan_format in parquet metadata.")
 
-    arrays = {name: table.column(name).to_numpy(zero_copy_only=False) for name in table.schema.names}
+    arrays = {
+        name: table.column(name).to_numpy(zero_copy_only=False) for name in table.schema.names
+    }
     frames = _arrays_to_frames(arrays)
 
     return PoseSequence(
@@ -252,9 +250,7 @@ def _format_for(path: Path) -> str:
         return "parquet"
     if ext == ".json":
         return "json"
-    raise ValueError(
-        f"Unsupported extension for pose sequence: {ext!r}. Use .parquet or .json."
-    )
+    raise ValueError(f"Unsupported extension for pose sequence: {ext!r}. Use .parquet or .json.")
 
 
 def save_pose_sequence(seq: PoseSequence, path: Path | str) -> Path:

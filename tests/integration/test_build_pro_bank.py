@@ -38,9 +38,7 @@ def fake_labels_file(tmp_path: Path, sample_swing_path: Path) -> Path:
     return path
 
 
-def test_build_pro_bank_cli_round_trip(
-    fake_labels_file: Path, tmp_path: Path
-) -> None:
+def test_build_pro_bank_cli_round_trip(fake_labels_file: Path, tmp_path: Path) -> None:
     out_dir = tmp_path / "pro_bank"
     rc = build_main(
         [

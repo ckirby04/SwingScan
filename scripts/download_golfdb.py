@@ -35,9 +35,7 @@ from swingscan.utils.paths import data_dir
 
 _log = logging.getLogger(__name__)
 
-_ANNOTATIONS_URL = (
-    "https://raw.githubusercontent.com/wmcnally/golfdb/master/data/golfDB.pkl"
-)
+_ANNOTATIONS_URL = "https://raw.githubusercontent.com/wmcnally/golfdb/master/data/golfDB.pkl"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -65,9 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     configure_logging(args.log_level)
 
     target_dir = (
-        Path(args.output).expanduser().resolve()
-        if args.output
-        else data_dir() / "raw" / "golfdb"
+        Path(args.output).expanduser().resolve() if args.output else data_dir() / "raw" / "golfdb"
     )
     target_file = target_dir / "golfDB.pkl"
 

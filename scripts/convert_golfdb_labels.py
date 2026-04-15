@@ -177,9 +177,7 @@ def main(argv: list[str] | None = None) -> int:
 
         events = list(row["events"])
         if len(events) != 10:
-            _log.warning(
-                "Skipping swing %s: expected 10 events, got %d.", swing_id, len(events)
-            )
+            _log.warning("Skipping swing %s: expected 10 events, got %d.", swing_id, len(events))
             continue
 
         # GolfDB events: [clip_start, ADDRESS, TOE_UP, MID_BACKSWING, TOP,

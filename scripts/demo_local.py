@@ -127,9 +127,7 @@ def _build_app(
         cap.release()
         duration = frame_count / fps if fps > 0 else 0.0
         if duration > max_duration_s:
-            return None, [], (
-                f"Upload too long ({duration:.1f}s > {max_duration_s:.0f}s cap)."
-            )
+            return None, [], (f"Upload too long ({duration:.1f}s > {max_duration_s:.0f}s cap).")
 
         with tempfile.TemporaryDirectory() as workdir:
             annotated = Path(workdir) / "annotated.mp4"

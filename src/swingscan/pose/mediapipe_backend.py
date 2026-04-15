@@ -105,9 +105,7 @@ class MediaPipePoseEstimator:
             timestamp_s = idx / fps if fps > 0 else 0.0
             frames.append(self.estimate(bgr, idx, timestamp_s))
 
-        low_ratio = (
-            sum(1 for f in frames if f.is_low_confidence) / len(frames) if frames else 0.0
-        )
+        low_ratio = sum(1 for f in frames if f.is_low_confidence) / len(frames) if frames else 0.0
         _log.info(
             "Processed %d frames through MediaPipe; %.1f%% flagged low-confidence.",
             len(frames),

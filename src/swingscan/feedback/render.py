@@ -36,9 +36,7 @@ def render_text(items: list[FeedbackItem], max_items: int = 5) -> str:
         lines.append(f"  [{marker}] {item.phase:>20s} · {item.message}")
     if len(items) > max_items:
         lines.append(f"  ... +{len(items) - max_items} additional cues suppressed")
-    lines.append(
-        "These are heuristic cues, not medical or clinical advice."
-    )
+    lines.append("These are heuristic cues, not medical or clinical advice.")
     return "\n".join(lines) + "\n"
 
 

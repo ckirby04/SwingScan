@@ -9,9 +9,7 @@ from swingscan.cli import main
 from swingscan.phases.events import SwingEvent
 
 
-def test_phases_cli_produces_monotonic_events(
-    sample_swing_path: Path, tmp_path: Path
-) -> None:
+def test_phases_cli_produces_monotonic_events(sample_swing_path: Path, tmp_path: Path) -> None:
     out = tmp_path / "phases.json"
     rc = main(["phases", "--input", str(sample_swing_path), "--output", str(out)])
     assert rc == 0

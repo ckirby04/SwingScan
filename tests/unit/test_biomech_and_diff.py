@@ -88,9 +88,7 @@ def _pro_swing_from(pose: PoseSequence, swing_id: str) -> ProSwing:
 
 def test_swing_diff_against_populated_bank_produces_z_scores() -> None:
     base_pose = _synthetic_pose_sequence()
-    bank = ProBank.from_rows(
-        [_pro_swing_from(base_pose, f"swing_{i}") for i in range(3)]
-    )
+    bank = ProBank.from_rows([_pro_swing_from(base_pose, f"swing_{i}") for i in range(3)])
     diff = compare_against_bank(base_pose, None, bank)
     assert diff.cohort_size == 3
 

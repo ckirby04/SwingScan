@@ -65,9 +65,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=5,
         help="Frames of tolerance for PCE scoring.",
     )
-    parser.add_argument(
-        "--limit", type=int, default=None, help="Cap number of swings evaluated."
-    )
+    parser.add_argument("--limit", type=int, default=None, help="Cap number of swings evaluated.")
     parser.add_argument(
         "--segmenter",
         choices=["heuristic", "swingnet", "auto"],
@@ -86,9 +84,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _build_segmenter(
-    choice: str, swingnet_weights: str | None
-) -> tuple[PhaseSegmenter, str]:
+def _build_segmenter(choice: str, swingnet_weights: str | None) -> tuple[PhaseSegmenter, str]:
     """Pick the segmenter per --segmenter / auto-discovery."""
     if choice == "heuristic":
         return HeuristicSegmenter(), "heuristic"
@@ -96,7 +92,11 @@ def _build_segmenter(
     if choice in ("swingnet", "auto"):
         from swingscan.phases.swingnet import SwingNetSegmenter, default_swingnet_path
 
-        path = Path(swingnet_weights).expanduser().resolve() if swingnet_weights else default_swingnet_path()
+        path = (
+            Path(swingnet_weights).expanduser().resolve()
+            if swingnet_weights
+            else default_swingnet_path()
+        )
         if path.is_file():
             return SwingNetSegmenter(weights_path=path), "swingnet"
         if choice == "swingnet":
@@ -224,9 +224,7 @@ def main(argv: list[str] | None = None) -> int:
     pose_complete_avg = (
         sum(r.pose_complete_ratio for r in results) / len(results) if results else 0.0
     )
-    bank_coverage = (
-        sum(1 for r in results if r.bank_match) / len(results) if results else 0.0
-    )
+    bank_coverage = sum(1 for r in results if r.bank_match) / len(results) if results else 0.0
 
     report = {
         "format": "swingscan_evaluation_v1",

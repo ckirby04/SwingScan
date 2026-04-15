@@ -217,11 +217,17 @@ class EventDetector(nn.Module):
         if dropout:
             self.drop = nn.Dropout(0.5)
 
-    def init_hidden(self, batch_size: int, device: torch.device) -> tuple[torch.Tensor, torch.Tensor]:
+    def init_hidden(
+        self, batch_size: int, device: torch.device
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         num_directions = 2 if self.bidirectional else 1
         return (
-            torch.zeros(num_directions * self.lstm_layers, batch_size, self.lstm_hidden, device=device),
-            torch.zeros(num_directions * self.lstm_layers, batch_size, self.lstm_hidden, device=device),
+            torch.zeros(
+                num_directions * self.lstm_layers, batch_size, self.lstm_hidden, device=device
+            ),
+            torch.zeros(
+                num_directions * self.lstm_layers, batch_size, self.lstm_hidden, device=device
+            ),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -262,9 +268,7 @@ def load_swingnet_checkpoint(weights_path: str, device: torch.device) -> EventDe
         bidirectional=True,
         dropout=False,
     )
-    checkpoint: dict[str, Any] = torch.load(
-        weights_path, map_location=device, weights_only=False
-    )
+    checkpoint: dict[str, Any] = torch.load(weights_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(device)
     model.eval()

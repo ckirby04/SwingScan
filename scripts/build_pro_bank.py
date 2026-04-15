@@ -76,9 +76,7 @@ def main(argv: list[str] | None = None) -> int:
         else data_dir() / "raw" / "labels.json"
     )
     output_dir = (
-        Path(args.output_dir).expanduser().resolve()
-        if args.output_dir
-        else data_dir() / "pro_bank"
+        Path(args.output_dir).expanduser().resolve() if args.output_dir else data_dir() / "pro_bank"
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     bank_path = output_dir / "bank.parquet"
@@ -114,8 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     sys.stdout.write(
-        f"Wrote {len(bank)}-swing bank to {bank_path}\n"
-        f"Manifest: {manifest_path}\n"
+        f"Wrote {len(bank)}-swing bank to {bank_path}\n" f"Manifest: {manifest_path}\n"
     )
     return 0
 

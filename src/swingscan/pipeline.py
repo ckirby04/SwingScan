@@ -194,9 +194,9 @@ def render_report(result: PipelineResult) -> str:
         f"{result.club.interpolated_ratio:.0%} interpolated",
     ]
     if result.phases is not None:
-        lines.append("  phases: " + ", ".join(
-            f"{ev.name}={idx}" for ev, idx in result.phases.events
-        ))
+        lines.append(
+            "  phases: " + ", ".join(f"{ev.name}={idx}" for ev, idx in result.phases.events)
+        )
     if result.diff is not None:
         lines.append(f"  cohort: {result.diff.cohort_size} pro swings")
     lines.append("")

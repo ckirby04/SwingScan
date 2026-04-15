@@ -46,9 +46,7 @@ class ClubTrack:
     def interpolated_ratio(self) -> float:
         if not self.detections:
             return 0.0
-        return sum(1 for d in self.detections if d.source == "interpolated") / len(
-            self.detections
-        )
+        return sum(1 for d in self.detections if d.source == "interpolated") / len(self.detections)
 
 
 class ClubTracker:
