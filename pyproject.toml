@@ -41,10 +41,11 @@ pipeline = [
     "torch==2.3.1",
     "torchvision==0.18.1",
     "ultralytics==8.2.50",
-    "gradio==4.36.1",
-    # gradio 4.36.1 doesn't pin huggingface_hub and the 1.x line
-    # removed HfFolder, which gradio still imports. Pin to the last
-    # 0.x release that gradio was tested against.
+    # Gradio 4.44.1 is the last 4.x point release and ships the
+    # starlette/jinja2 cache-key compatibility fix that 4.36.1 lacked.
+    "gradio==4.44.1",
+    # Gradio still doesn't pin huggingface_hub and the 1.x line
+    # removed HfFolder. Pin to the last 0.x release.
     "huggingface_hub==0.24.7",
 ]
 dev = [
