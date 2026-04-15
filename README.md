@@ -23,13 +23,27 @@ the in-progress stage.
 | 1     | Video I/O + Pose (MediaPipe)      | Done    | `swingscan pose` CLI, parquet schema. [status](docs/plans/stage1-status.md) |
 | 2     | Club-head detection               | Done    | Heuristic + YOLO, `ClubTracker`. [status](docs/plans/stage2-status.md) · [ADR 002](docs/decisions/002-club-detection-fallback.md) |
 | 3     | GolfDB ingestion + pro bank       | Done    | `ProBank`, download + build scripts. [status](docs/plans/stage3-status.md) |
-| 4     | Phase segmentation                | Done    | Heuristic + SwingNet stub, `swingscan phases`. [status](docs/plans/stage4-status.md) |
+| 4     | Phase segmentation                | Done    | Heuristic + **real SwingNet inference** (94.75 % PCE on 50-swing eval). [status](docs/plans/stage4-status.md) · [eval report](docs/evaluations/) |
 | 5     | Biomech metrics + comparison      | Done    | `SwingMetrics`, `SwingDiff`. [status](docs/plans/stage5-status.md) |
 | 6     | Feedback generation               | Done    | 15-rule YAML engine, text + JSON. [status](docs/plans/stage6-status.md) |
 | 7     | Visualization overlays            | Done    | Annotated video output. [status](docs/plans/stage7-status.md) |
 | 8     | Demo UI (Gradio)                  | Done    | `make demo`. [status](docs/plans/stage8-status.md) |
 | 9     | Evaluation harness                | Done    | `scripts/evaluate_pipeline.py`. [status](docs/plans/stage9-status.md) |
 | 10    | Polish + handoff                  | Done    | v0.1.0 tag, ROADMAP, architecture docs. |
+
+**Post-v0.1.0 work landed on main:**
+- SwingNet inference wired up — 9.5 % PCE → 94.75 % PCE on the same
+  50-swing face-on driver eval.
+- Feedback thresholds recalibrated from the real 178-swing bank via
+  `scripts/calibrate_thresholds.py`. 4-of-5 false-positive feedback
+  cues on Jerry Kelly's swing went away.
+- Circular-mean statistics for angular metrics (fixes 127° shoulder
+  rotation wraparound noise).
+- UTF-8 stdout in the CLI so Windows PowerShell renders °, —, and ·.
+- GitHub Actions CI running lint / ruff format / mypy / pytest on
+  every push and PR against `main`.
+- A real data/pro_bank/bank.parquet (178 face-on driver pros) and a
+  data/pro_bank_dtl/ down-the-line bank built from the same release.
 
 ## Quickstart
 
