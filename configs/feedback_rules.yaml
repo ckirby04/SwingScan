@@ -1,121 +1,213 @@
+# SwingScan feedback rule set.
+#
+# Each rule fires when a specific (phase, metric) delta crosses a
+# threshold in the named direction. Thresholds were calibrated from
+# the 178-swing face-on driver pro bank at 1.5 sigma — see
+# `scripts/calibrate_thresholds.py`.
+#
+# Message templates use `{delta:.0f}` (amateur minus cohort median) and
+# `{amateur:.2f}` (raw measured value). They are written in the voice
+# of a coach talking to a double-digit handicap golfer: name the
+# problem plainly, give a feel cue, give a drill or swing thought.
+#
+# Heuristic cues only — not medical or clinical advice.
+
 rules:
-- name: insufficient_backswing_turn
-  phase: TOP
-  metric: shoulder_rotation_deg
-  direction: below
-  threshold: -58.26
-  severity: 3
-  message_template: Shoulder turn at the top is {delta:.0f}° short of the pro cohort
-    — try to feel a fuller coil.
-- name: excessive_backswing_turn
-  phase: TOP
-  metric: shoulder_rotation_deg
-  direction: above
-  threshold: 58.26
-  severity: 2
-  message_template: Shoulder turn at the top is {delta:.0f}° past the cohort — over-rotation
-    can cost control.
-- name: hip_stall_at_impact
-  phase: IMPACT
-  metric: hip_rotation_deg
-  direction: below
-  threshold: -7.66
-  severity: 3
-  message_template: Hips are {delta:.0f}° short of the cohort at impact — hip stall
-    costs clubhead speed.
-- name: early_extension_spine_loss
-  phase: IMPACT
-  metric: spine_lean_deg
-  direction: above
-  threshold: 9.07
-  severity: 3
-  message_template: Spine lean at impact has straightened {delta:.0f}° relative to
-    the cohort — classic early extension pattern.
-- name: lead_arm_collapse
-  phase: TOP
-  metric: lead_arm_angle_deg
-  direction: below
-  threshold: -57.09
-  severity: 2
-  message_template: Lead arm is bent {delta:.0f}° more than the cohort at the top
-    — check for arm collapse at the end of the backswing.
-- name: lead_arm_collapse_mfq
-  phase: MID_BACKSWING
-  metric: lead_arm_angle_deg
-  direction: below
-  threshold: -33.96
-  severity: 2
-  message_template: Lead arm is starting to fold early ({delta:.0f}° more bent than
-    the cohort) — try to maintain width in the backswing.
-- name: casting_wrist
-  phase: MID_DOWNSWING
-  metric: wrist_hinge_deg
-  direction: above
-  threshold: 25.68
-  severity: 3
-  message_template: Wrist hinge has released {delta:.0f}° earlier than the cohort
-    — casting from the top loses power.
-- name: reverse_pivot_address
-  phase: ADDRESS
-  metric: spine_lean_deg
-  direction: above
-  threshold: 6.17
-  severity: 2
-  message_template: Spine is already leaning toward the target at address ({delta:.0f}°)
-    — reverse-pivot risk.
-- name: head_dip
-  phase: IMPACT
-  metric: head_movement
-  direction: above
-  threshold: 0.07
-  severity: 2
-  message_template: Head has moved {amateur:.2f} units from address by impact — try
-    to stay centered.
-- name: head_drift_backswing
-  phase: TOP
-  metric: head_movement
-  direction: above
-  threshold: 0.07
-  severity: 2
-  message_template: Head is {amateur:.2f} units off from address at the top — looks
-    like a sway.
-- name: knee_flex_lost_top
-  phase: TOP
-  metric: lead_knee_flex_deg
-  direction: above
-  threshold: 10.28
-  severity: 2
-  message_template: Lead knee has straightened {delta:.0f}° more than the cohort at
-    the top — maintain flex for a stable base.
-- name: insufficient_x_factor
-  phase: TOP
-  metric: x_factor_deg
-  direction: below
-  threshold: -36.24
-  severity: 2
-  message_template: X-factor (shoulders vs hips) is {delta:.0f}° shy of the cohort
-    at the top — cultivate the separation.
-- name: wrist_hinge_lost_top
-  phase: TOP
-  metric: wrist_hinge_deg
-  direction: above
-  threshold: 32.15
-  severity: 2
-  message_template: Wrists are {delta:.0f}° less hinged than the cohort at the top
-    — set the club earlier.
-- name: hip_rotation_early_release
-  phase: MID_DOWNSWING
-  metric: hip_rotation_deg
-  direction: below
-  threshold: -23.82
-  severity: 2
-  message_template: Hips lag the cohort by {delta:.0f}° mid-downswing — they should
-    be leading the sequence here.
-- name: head_up_finish
-  phase: FINISH
-  metric: head_movement
-  direction: above
-  threshold: 0.09
-  severity: 1
-  message_template: Large head drift by finish ({amateur:.2f} units) — fine for balance
-    work; flagged for awareness.
+  - name: insufficient_backswing_turn
+    phase: TOP
+    metric: shoulder_rotation_deg
+    direction: below
+    threshold: -58.26
+    severity: 3
+    message_template: >-
+      Your backswing is coming up short — you're not getting a full
+      shoulder turn. Feel like your lead shoulder touches your chin
+      at the top and your back faces the target. Most doubles run
+      out of arms before they run out of turn; let the turn make
+      the room.
+
+  - name: excessive_backswing_turn
+    phase: TOP
+    metric: shoulder_rotation_deg
+    direction: above
+    threshold: 58.26
+    severity: 2
+    message_template: >-
+      You're over-turning at the top. It feels powerful but usually
+      means you've lost your posture and swayed past your trail foot.
+      Shorten the backswing by half a beat — stop when you feel your
+      trail glute load, not when your shoulder physically can't go
+      any further.
+
+  - name: hip_stall_at_impact
+    phase: IMPACT
+    metric: hip_rotation_deg
+    direction: below
+    threshold: -7.66
+    severity: 3
+    message_template: >-
+      Your hips aren't rotating through impact — that's why it feels
+      like you're swinging with just your arms. Start the downswing
+      by bumping your lead hip toward the target BEFORE your hands
+      move. Feel it in your belt buckle — make it point left of the
+      target by the time you hit the ball (for a right-hander).
+
+  - name: early_extension_spine_loss
+    phase: IMPACT
+    metric: spine_lean_deg
+    direction: above
+    threshold: 9.07
+    severity: 3
+    message_template: >-
+      You're standing up through impact — spine straightening about
+      {delta:.0f}° more than pros. This is the #1 cause of fat, thin,
+      and shanked shots for amateurs. Feel: keep your trail cheek
+      pointed at the ground and let your hips clear BEHIND you, not
+      toward the ball. Drill: set up with a chair cushion against
+      your trail hip. Don't let your hip push into it in the
+      downswing.
+
+  - name: lead_arm_collapse
+    phase: TOP
+    metric: lead_arm_angle_deg
+    direction: below
+    threshold: -57.09
+    severity: 2
+    message_template: >-
+      Your lead arm is collapsing at the top — you're losing the
+      width that creates clubhead speed. Keep it straight-ish
+      (not locked, but not folded). Thought: feel like the
+      clubhead is trying to escape behind you and your lead arm
+      is the rope holding it out there.
+
+  - name: lead_arm_collapse_mfq
+    phase: MID_BACKSWING
+    metric: lead_arm_angle_deg
+    direction: below
+    threshold: -33.96
+    severity: 2
+    message_template: >-
+      Your lead arm is already folding halfway back — way too early.
+      You're losing width before the backswing even finishes. Feel
+      the takeaway as ONE piece: shoulders, arms, hands, and club
+      all moving together for the first two feet. No wrist action
+      yet, no elbow bend yet.
+
+  - name: casting_wrist
+    phase: MID_DOWNSWING
+    metric: wrist_hinge_deg
+    direction: above
+    threshold: 25.68
+    severity: 3
+    message_template: >-
+      You're casting the club — releasing the wrist hinge from the
+      top instead of holding it into impact. That kills lag and
+      kills distance. Feel: lead the downswing with your lower body
+      and let the club handle "fall behind" your hands as long as
+      possible. The release should happen AT the ball, not from the
+      top of the swing.
+
+  - name: reverse_pivot_address
+    phase: ADDRESS
+    metric: spine_lean_deg
+    direction: above
+    threshold: 6.17
+    severity: 2
+    message_template: >-
+      Your spine is already leaning toward the target at address —
+      that's a reverse-pivot setup waiting to happen. For a driver,
+      tilt your upper body slightly AWAY from the target so your
+      lead shoulder is higher than your trail shoulder. The ball
+      should feel like it's under your lead armpit.
+
+  - name: head_dip
+    phase: IMPACT
+    metric: head_movement
+    direction: above
+    threshold: 0.07
+    severity: 2
+    message_template: >-
+      You're diving down toward the ball — your head has moved
+      {amateur:.2f} units by impact. That makes solid contact a
+      coin flip. Feel: keep your eyes level through the swing, like
+      you're looking along a tabletop. Thought: pretend there's a
+      string from the top of your head to the ceiling; don't let it
+      go slack.
+
+  - name: head_drift_backswing
+    phase: TOP
+    metric: head_movement
+    direction: above
+    threshold: 0.07
+    severity: 2
+    message_template: >-
+      You're swaying off the ball on the backswing — your head has
+      drifted {amateur:.2f} units away from address. Sways cost
+      power AND consistency. Feel: turn AROUND a vertical axis over
+      your trail heel, don't slide away from the ball. Drill: put a
+      tee in the ground just outside your trail foot; if you can
+      see it in your peripheral vision at the top, you swayed.
+
+  - name: knee_flex_lost_top
+    phase: TOP
+    metric: lead_knee_flex_deg
+    direction: above
+    threshold: 10.28
+    severity: 2
+    message_template: >-
+      Your lead knee is straightening at the top — you're standing
+      up INTO the backswing. Maintain the flex you had at address.
+      Drill: make slow practice swings keeping both knees bent the
+      whole way. You want to turn THROUGH the flex, not out of it.
+
+  - name: insufficient_x_factor
+    phase: TOP
+    metric: x_factor_deg
+    direction: below
+    threshold: -36.24
+    severity: 2
+    message_template: >-
+      Your shoulders and hips are too much in sync at the top —
+      you're missing the separation that stretches your core and
+      creates free speed. Feel: on the backswing, your hips should
+      resist a little while your shoulders keep going. Thought:
+      "hips quiet, shoulders full."
+
+  - name: wrist_hinge_lost_top
+    phase: TOP
+    metric: wrist_hinge_deg
+    direction: above
+    threshold: 32.15
+    severity: 2
+    message_template: >-
+      You're not setting the wrists enough at the top. No wrist
+      set = no release = no speed. At the top, the club shaft
+      should be roughly perpendicular to your lead forearm. Drill:
+      make half-backswings where you hinge the wrists before your
+      hands reach hip height. Feel early, then full turn.
+
+  - name: hip_rotation_early_release
+    phase: MID_DOWNSWING
+    metric: hip_rotation_deg
+    direction: below
+    threshold: -23.82
+    severity: 2
+    message_template: >-
+      Your hips are lagging behind where they should be in the
+      downswing. In a good swing, the hips lead and the arms chase
+      them. Feel: start the downswing with a bump-and-turn of your
+      lead hip, and let your hands "drop" into the slot behind you.
+      Thought: "hips first, always."
+
+  - name: head_up_finish
+    phase: FINISH
+    metric: head_movement
+    direction: above
+    threshold: 0.09
+    severity: 1
+    message_template: >-
+      Big head drift by the finish position ({amateur:.2f} units) —
+      this is usually a sign you're swinging out of your shoes.
+      Back off to 80% effort and try to hold a balanced finish
+      for a full second before moving. Tempo fixes more things
+      than any technique change.
