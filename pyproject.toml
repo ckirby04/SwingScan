@@ -41,11 +41,18 @@ pipeline = [
     "torch==2.3.1",
     "torchvision==0.18.1",
     "ultralytics==8.2.50",
-    # Gradio 4.44.1 is the last 4.x point release and ships the
-    # starlette/jinja2 cache-key compatibility fix that 4.36.1 lacked.
     "gradio==4.44.1",
-    # Gradio still doesn't pin huggingface_hub and the 1.x line
-    # removed HfFolder. Pin to the last 0.x release.
+    # Gradio 4.x calls `TemplateResponse(name, context, ...)` — the
+    # old Starlette signature. Starlette 1.0 flipped it to
+    # `TemplateResponse(request, name, ...)`, so the context dict
+    # arrives where the template name is expected and jinja2 dies
+    # with "unhashable type: 'dict'" inside its LRUCache. Pin
+    # fastapi < 0.115 so its transitive starlette stays < 0.40 and
+    # gradio's old calling convention still works.
+    "fastapi==0.114.2",
+    "starlette==0.38.6",
+    # Gradio doesn't pin huggingface_hub and the 1.x line removed
+    # HfFolder. Pin to the last 0.x release.
     "huggingface_hub==0.24.7",
 ]
 dev = [
