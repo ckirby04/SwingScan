@@ -95,6 +95,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Optional path to a feedback rules YAML. Defaults to configs/feedback_rules.yaml.",
     )
     run_p.add_argument(
+        "--swingnet-weights",
+        default=None,
+        help=(
+            "Optional path to SwingNet weights (e.g. models/swingnet_1800.pth.tar). "
+            "Auto-discovered if present. Without weights, the heuristic segmenter "
+            "is used as the fallback."
+        ),
+    )
+    run_p.add_argument(
         "--handedness",
         default="right",
         choices=["right", "left"],
@@ -161,6 +170,16 @@ def _cmd_run(args: argparse.Namespace) -> int:
     cfg = load_config(args.config)
     input_path = Path(args.input).expanduser().resolve()
 
+    # Auto-discover SwingNet weights if the user didn't pass a path.
+    swingnet_weights = args.swingnet_weights
+    if swingnet_weights is None:
+        from swingscan.phases.swingnet import default_swingnet_path
+
+        candidate = default_swingnet_path()
+        if candidate.is_file():
+            swingnet_weights = str(candidate)
+            log.info("Auto-discovered SwingNet weights at %s", candidate)
+
     log.info("Running pipeline: %s", input_path)
     result = run_pipeline(
         video_path=input_path,
@@ -168,6 +187,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
         club_weights=args.club_weights,
         pro_bank_path=args.pro_bank,
         rules_path=args.rules,
+        swingnet_weights=swingnet_weights,
         handedness=args.handedness,
     )
 

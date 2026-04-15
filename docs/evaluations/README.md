@@ -4,7 +4,40 @@ Committed output of `scripts/evaluate_pipeline.py` against labeled GolfDB
 splits. Each report documents the labels, tolerance, bank, and resulting
 per-swing scores — version-controlled so we can track regressions.
 
+## Headline numbers
+
+| Segmenter | PCE (tol=5) | Report |
+|---|---|---|
+| Heuristic (wrist velocity) | 9.5 % | `eval_50_face_on_driver_heuristic.json` |
+| **SwingNet** (vendored) | **94.75 %** | `eval_50_face_on_driver_swingnet.json` |
+
+On the same 50-swing face-on driver subset. The SwingNet path also
+scores **82.5 %** at the paper's reported tolerance=1 (vs. 71.5 %
+reported in McNally et al. 2019); our number is higher because the
+subset likely overlaps with SwingNet's training split — see the
+per-report notes below.
+
 ## Reports
+
+### `eval_50_face_on_driver_swingnet.json`
+
+- **Labels:** first 50 face-on driver non-slow-mo swings from GolfDB.
+- **Pro bank:** 178-swing face-on driver bank.
+- **Segmenter:** `SwingNetSegmenter` (vendored upstream model +
+  `models/swingnet_1800.pth.tar`).
+- **Tolerance:** ±5 frames.
+
+**Results:** 379 / 400 events correct (94.75 %), pose completeness
+99.6 %, bank coverage 100 %.
+
+**Methodology note.** The upstream GolfDB repo shipped the pretrained
+weights trained on "split 1" of its 4 splits. Our `labels.json` is
+produced by filtering the full pickle for face-on driver non-slow-mo
+rows and taking the first 50, which undoubtedly includes some
+training-set rows. The 82.5 % tolerance-1 number should therefore be
+interpreted as "SwingNet works and is not silently broken" rather
+than a clean test-set benchmark. For a clean benchmark, filter the
+labels to GolfDB's split 4 only.
 
 ### `eval_50_face_on_driver_heuristic.json`
 

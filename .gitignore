@@ -39,11 +39,16 @@ Desktop.ini
 # All downloaded datasets, processed artifacts, and model checkpoints are
 # user-local and must never be committed. See data/README.md and
 # models/README.md.
-data/
+#
+# Pattern note: we can't write `data/` and then `!data/README.md` because
+# once the directory is ignored git stops descending into it. The correct
+# form is to ignore files inside via `data/**` and then allow-list
+# individual tracked files.
+data/**
 !data/README.md
 !data/.gitkeep
 !data/**/.gitkeep
-models/
+models/**
 !models/README.md
 !models/.gitkeep
 

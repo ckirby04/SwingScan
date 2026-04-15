@@ -33,7 +33,7 @@ from swingscan.compare.pro_bank import ProBank, SwingLabel
 from swingscan.config import load_config
 from swingscan.io.video import VideoReader
 from swingscan.phases.events import SwingEvent
-from swingscan.phases.segmenter import HeuristicSegmenter
+from swingscan.phases.segmenter import HeuristicSegmenter, PhaseSegmenter
 from swingscan.pose.mediapipe_backend import MediaPipePoseEstimator
 from swingscan.utils.logging import configure_logging
 from swingscan.utils.paths import data_dir
@@ -68,14 +68,49 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--limit", type=int, default=None, help="Cap number of swings evaluated."
     )
+    parser.add_argument(
+        "--segmenter",
+        choices=["heuristic", "swingnet", "auto"],
+        default="auto",
+        help=(
+            "Which phase segmenter to evaluate. 'auto' uses SwingNet if "
+            "models/swingnet_1800.pth.tar is present, otherwise heuristic."
+        ),
+    )
+    parser.add_argument(
+        "--swingnet-weights",
+        default=None,
+        help="Override path to SwingNet weights.",
+    )
     parser.add_argument("--log-level", default="INFO")
     return parser
+
+
+def _build_segmenter(
+    choice: str, swingnet_weights: str | None
+) -> tuple[PhaseSegmenter, str]:
+    """Pick the segmenter per --segmenter / auto-discovery."""
+    if choice == "heuristic":
+        return HeuristicSegmenter(), "heuristic"
+
+    if choice in ("swingnet", "auto"):
+        from swingscan.phases.swingnet import SwingNetSegmenter, default_swingnet_path
+
+        path = Path(swingnet_weights).expanduser().resolve() if swingnet_weights else default_swingnet_path()
+        if path.is_file():
+            return SwingNetSegmenter(weights_path=path), "swingnet"
+        if choice == "swingnet":
+            raise FileNotFoundError(f"SwingNet weights not found: {path}")
+        _log.warning("SwingNet weights not found at %s; falling back to heuristic.", path)
+
+    return HeuristicSegmenter(), "heuristic"
 
 
 def _score_swing(
     label: SwingLabel,
     bank: ProBank | None,
     tolerance: int,
+    segmenter: PhaseSegmenter,
 ) -> PerSwingResult | None:
     video_path = Path(label.video_path).expanduser().resolve()
     if not video_path.is_file():
@@ -89,7 +124,7 @@ def _score_swing(
     if len(pose_seq) == 0:
         return None
 
-    predicted = HeuristicSegmenter().segment(pose_seq)
+    predicted = segmenter.segment(pose_seq)
     predicted_by_name = predicted.as_dict()
 
     correct = 0
@@ -174,9 +209,12 @@ def main(argv: list[str] | None = None) -> int:
         raw_labels = raw_labels[: args.limit]
     labels = [SwingLabel.model_validate(row) for row in raw_labels]
 
+    segmenter, segmenter_label = _build_segmenter(args.segmenter, args.swingnet_weights)
+    _log.info("Using %s segmenter", segmenter_label)
+
     results: list[PerSwingResult] = []
     for label in labels:
-        r = _score_swing(label, bank, args.tolerance)
+        r = _score_swing(label, bank, args.tolerance, segmenter)
         if r is not None:
             results.append(r)
 
@@ -193,6 +231,7 @@ def main(argv: list[str] | None = None) -> int:
     report = {
         "format": "swingscan_evaluation_v1",
         "labels_path": str(labels_path),
+        "segmenter": segmenter_label,
         "tolerance": args.tolerance,
         "swings_total": len(labels),
         "swings_scored": len(results),

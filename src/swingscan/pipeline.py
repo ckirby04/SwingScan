@@ -28,7 +28,7 @@ from swingscan.config import SwingScanConfig, load_config
 from swingscan.feedback.render import render_text
 from swingscan.feedback.rules import FeedbackItem, RuleEngine
 from swingscan.io.video import VideoReader
-from swingscan.phases.segmenter import HeuristicSegmenter, PhaseMap
+from swingscan.phases.segmenter import HeuristicSegmenter, PhaseMap, PhaseSegmenter
 from swingscan.pose.base import PoseSequence
 from swingscan.pose.mediapipe_backend import MediaPipePoseEstimator
 
@@ -78,12 +78,33 @@ def _build_club_detector(
     return HeuristicClubDetector(), "heuristic"
 
 
+def _build_segmenter(swingnet_weights: Path | str | None) -> tuple[PhaseSegmenter, str]:
+    """Pick the phase segmenter. Returns (segmenter, label)."""
+    if swingnet_weights is not None:
+        from swingscan.phases.swingnet import SwingNetSegmenter
+
+        try:
+            segmenter = SwingNetSegmenter(weights_path=swingnet_weights)
+        except FileNotFoundError as exc:
+            _log.warning(
+                "SwingNet weights unavailable (%s). Falling back to HeuristicSegmenter.",
+                exc,
+            )
+        else:
+            _log.info("Using SwingNetSegmenter with weights %s", swingnet_weights)
+            return segmenter, "swingnet"
+
+    _log.info("Using HeuristicSegmenter (no SwingNet weights).")
+    return HeuristicSegmenter(), "heuristic"
+
+
 def run_pipeline(
     video_path: Path | str,
     config: SwingScanConfig | None = None,
     club_weights: Path | str | None = None,
     pro_bank_path: Path | str | None = None,
     rules_path: Path | str | None = None,
+    swingnet_weights: Path | str | None = None,
     handedness: str = "right",
 ) -> PipelineResult:
     """Run Stage 1 + Stage 2 on a single video and return the result.
@@ -132,8 +153,12 @@ def run_pipeline(
         track.interpolated_ratio * 100,
     )
 
-    # Stage 4: phase segmentation (heuristic).
-    phase_map = HeuristicSegmenter().segment(pose_seq) if len(pose_seq) > 0 else None
+    # Stage 4: phase segmentation. Prefer SwingNet when weights are
+    # supplied; fall back to the wrist-velocity heuristic otherwise.
+    phase_map: PhaseMap | None = None
+    if len(pose_seq) > 0:
+        segmenter, _ = _build_segmenter(swingnet_weights)
+        phase_map = segmenter.segment(pose_seq)
 
     # Stage 5 + 6: comparison against a bank + feedback.
     diff: SwingDiff | None = None
