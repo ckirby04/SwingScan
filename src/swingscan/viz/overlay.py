@@ -198,11 +198,17 @@ def render_annotated_video(
     club: ClubTrack,
     phases: PhaseMap | None,
     out_path: Path | str,
+    draw_club: bool = False,
 ) -> Path:
     """Render an annotated output video. Returns the written path.
 
-    Each source frame is decorated with the pose skeleton, the trailing
-    club-head arc, and a phase banner.
+    Each source frame is decorated with the pose skeleton and a phase
+    banner. When ``draw_club`` is True, the trailing club-head arc is
+    overlaid as well; by default it is suppressed because the
+    pose-derived heuristic club tracker is still noisy enough to be
+    more distracting than useful. Set ``draw_club=True`` once a real
+    learned club detector lands, or pass ``swingscan run --draw-club``
+    for a one-off visualization.
     """
     out = Path(out_path).expanduser().resolve()
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -215,7 +221,8 @@ def render_annotated_video(
                 canvas = bgr.copy()
                 if i < len(pose):
                     draw_skeleton(canvas, pose.frames[i])
-                draw_club_trail(canvas, club, i)
+                if draw_club:
+                    draw_club_trail(canvas, club, i)
                 draw_phase_banner(canvas, phases, i)
                 writer.write(canvas)
         finally:

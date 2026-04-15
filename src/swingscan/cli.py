@@ -112,7 +112,16 @@ def _build_parser() -> argparse.ArgumentParser:
     run_p.add_argument(
         "--output-video",
         default=None,
-        help="Optional path to write an annotated output video (Stage 7+, no-op today).",
+        help="Optional path to write an annotated output video.",
+    )
+    run_p.add_argument(
+        "--draw-club",
+        action="store_true",
+        help=(
+            "Overlay the pose-derived club-head trail on the annotated video. "
+            "Off by default because the current heuristic tracker is visually "
+            "noisy; will become the default once a learned club detector ships."
+        ),
     )
     run_p.add_argument(
         "--config",
@@ -208,6 +217,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
             club=result.club,
             phases=result.phases,
             out_path=video_out,
+            draw_club=args.draw_club,
         )
         sys.stdout.write(f"Wrote annotated video to {video_out}\n")
 
