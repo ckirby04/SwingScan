@@ -88,44 +88,57 @@ class ClubDetector(Protocol):
 
 
 class HeuristicClubDetector:
-    """Pose-based fallback: estimate the club-head position from the hands.
+    """Pose-based fallback: estimate the club-head position from the grip.
 
     Algorithm:
 
-    1. Read both wrist positions in image-normalized space.
-    2. Take their midpoint ``M`` as the anchor.
-    3. Estimate the forearm direction from shoulder-midpoint to ``M``.
-    4. Walk ``M`` a fraction of the shoulder width along that direction
-       to approximate the club-head location. The fraction is configurable
-       via :attr:`club_length_shoulder_ratio` (default 2.0 — i.e. the club
-       head sits roughly two shoulder-widths past the hands, which is a
-       rough average for a driver addressed face-on).
-    5. Confidence is the product of the two wrist visibilities. When below
-       :attr:`min_wrist_visibility`, emit a missing detection.
+    1. Read both wrist positions in image-normalized space; require
+       each to clear :attr:`min_wrist_visibility` or emit a missing
+       detection.
+    2. Take the wrist midpoint ``G`` — the grip location where both
+       hands meet on the club.
+    3. Compute the **shaft direction** from the hand finger landmarks:
+       average the visibility-weighted
+       ``wrist -> (index + pinky + thumb)``
+       vectors across both hands. MediaPipe's Pose model returns
+       these 6 hand landmarks alongside the 27 body landmarks, so we
+       get actual hand orientation at zero extra cost.
+    4. Walk ``G`` along that unit direction by
+       :attr:`club_forearm_ratio` times the average forearm length
+       (elbow to wrist). Forearm length is proportional to the
+       golfer's body scale, so this automatically adapts to camera
+       distance.
+    5. When the finger landmarks are too low-confidence to establish
+       a direction (for example during a fast pass through the top of
+       the backswing where MediaPipe sometimes loses the fingers), we
+       fall back to the previous shoulder-to-wrist extrapolation with
+       shoulder width as the scale — the old algorithm is still a
+       reasonable last resort.
+    6. Confidence is the product of the two wrist visibilities.
 
-    This is explicitly a proxy, not a true detector. It is accurate
-    enough to drive a Stage 4 heuristic phase segmenter but is not a
-    substitute for a learned detector — see ADR 002.
+    This is still a geometric proxy, not a true learned detector —
+    see ADR 002 — but on face-on driver clips it tracks the shaft
+    orientation instead of always pointing "away from the shoulders,"
+    which matters most at the top of the backswing and through impact.
     """
 
     def __init__(
         self,
-        club_length_shoulder_ratio: float = 2.0,
+        club_forearm_ratio: float = 3.8,
         min_wrist_visibility: float = 0.3,
+        min_finger_visibility: float = 0.2,
     ) -> None:
-        self.club_length_shoulder_ratio = club_length_shoulder_ratio
+        self.club_forearm_ratio = club_forearm_ratio
         self.min_wrist_visibility = min_wrist_visibility
+        self.min_finger_visibility = min_finger_visibility
 
     def detect_from_pose(self, pose: PoseFrame) -> ClubDetection:
         kp = pose.image_keypoints
         lw = kp[Joint.LEFT_WRIST.value]
         rw = kp[Joint.RIGHT_WRIST.value]
-        ls = kp[Joint.LEFT_SHOULDER.value]
-        rs = kp[Joint.RIGHT_SHOULDER.value]
 
         lw_vis = float(lw[3])
         rw_vis = float(rw[3])
-        visibility = lw_vis * rw_vis
         if lw_vis < self.min_wrist_visibility or rw_vis < self.min_wrist_visibility:
             return ClubDetection(
                 frame_index=pose.frame_index,
@@ -135,31 +148,47 @@ class HeuristicClubDetector:
                 source="missing",
             )
 
-        mx = 0.5 * (lw[0] + rw[0])
-        my = 0.5 * (lw[1] + rw[1])
+        # Grip: midpoint of the two wrists.
+        gx = 0.5 * (lw[0] + rw[0])
+        gy = 0.5 * (lw[1] + rw[1])
 
-        sx = 0.5 * (ls[0] + rs[0])
-        sy = 0.5 * (ls[1] + rs[1])
+        # Shaft direction from visibility-weighted hand-finger vectors.
+        dir_x, dir_y, weight_sum = self._shaft_direction(kp)
 
-        dx = mx - sx
-        dy = my - sy
-        norm = math.hypot(dx, dy)
+        # Fall back to shoulder→wrist extrapolation when fingers aren't
+        # trustworthy. This reproduces the old algorithm's behavior.
+        if weight_sum < 1e-6:
+            ls = kp[Joint.LEFT_SHOULDER.value]
+            rs = kp[Joint.RIGHT_SHOULDER.value]
+            sx = 0.5 * (ls[0] + rs[0])
+            sy = 0.5 * (ls[1] + rs[1])
+            dir_x = gx - sx
+            dir_y = gy - sy
+
+        norm = math.hypot(dir_x, dir_y)
         if norm < 1e-6:
-            # Hands directly under shoulders — common at address. Fall
-            # back to straight-down direction (positive y in image space).
-            dir_x, dir_y = 0.0, 1.0
+            # Hands directly under shoulders and no finger signal —
+            # common at a crisp address posture. Point straight down.
+            dir_ux, dir_uy = 0.0, 1.0
         else:
-            dir_x, dir_y = dx / norm, dy / norm
+            dir_ux = dir_x / norm
+            dir_uy = dir_y / norm
 
-        # Shoulder width as a crude scale in image-normalized space.
-        shoulder_width = math.hypot(ls[0] - rs[0], ls[1] - rs[1])
-        if shoulder_width < 1e-6:
-            shoulder_width = 0.1
+        # Scale the club length by average forearm length (elbow→wrist).
+        # Fall back to shoulder width when both elbows are missing.
+        forearm_scale = self._forearm_scale(kp)
+        if forearm_scale < 1e-6:
+            ls = kp[Joint.LEFT_SHOULDER.value]
+            rs = kp[Joint.RIGHT_SHOULDER.value]
+            forearm_scale = 0.5 * math.hypot(ls[0] - rs[0], ls[1] - rs[1])
+        if forearm_scale < 1e-6:
+            forearm_scale = 0.1
 
-        club_x = float(mx + dir_x * self.club_length_shoulder_ratio * shoulder_width)
-        club_y = float(my + dir_y * self.club_length_shoulder_ratio * shoulder_width)
+        club_length = self.club_forearm_ratio * forearm_scale
+        club_x = float(gx + dir_ux * club_length)
+        club_y = float(gy + dir_uy * club_length)
 
-        # Clamp into image bounds — downstream code assumes [0,1].
+        # Clamp into image bounds — downstream code assumes [0, 1].
         club_x = max(0.0, min(1.0, club_x))
         club_y = max(0.0, min(1.0, club_y))
 
@@ -167,9 +196,52 @@ class HeuristicClubDetector:
             frame_index=pose.frame_index,
             x=club_x,
             y=club_y,
-            confidence=visibility,
+            confidence=lw_vis * rw_vis,
             source="heuristic",
         )
+
+    def _shaft_direction(
+        self, kp: NDArray[np.float32]
+    ) -> tuple[float, float, float]:
+        """Visibility-weighted wrist->finger vector for both hands."""
+        dir_x = 0.0
+        dir_y = 0.0
+        weight_sum = 0.0
+        pairs: tuple[tuple[Joint, Joint], ...] = (
+            (Joint.LEFT_WRIST, Joint.LEFT_INDEX),
+            (Joint.LEFT_WRIST, Joint.LEFT_PINKY),
+            (Joint.LEFT_WRIST, Joint.LEFT_THUMB),
+            (Joint.RIGHT_WRIST, Joint.RIGHT_INDEX),
+            (Joint.RIGHT_WRIST, Joint.RIGHT_PINKY),
+            (Joint.RIGHT_WRIST, Joint.RIGHT_THUMB),
+        )
+        for wrist, finger in pairs:
+            fj = kp[finger.value]
+            vis = float(fj[3])
+            if vis < self.min_finger_visibility:
+                continue
+            wj = kp[wrist.value]
+            dir_x += (float(fj[0]) - float(wj[0])) * vis
+            dir_y += (float(fj[1]) - float(wj[1])) * vis
+            weight_sum += vis
+        return dir_x, dir_y, weight_sum
+
+    def _forearm_scale(self, kp: NDArray[np.float32]) -> float:
+        """Average forearm length from elbow to wrist across both sides."""
+        pairs = (
+            (Joint.LEFT_ELBOW, Joint.LEFT_WRIST),
+            (Joint.RIGHT_ELBOW, Joint.RIGHT_WRIST),
+        )
+        lengths: list[float] = []
+        for elbow, wrist in pairs:
+            e = kp[elbow.value]
+            w = kp[wrist.value]
+            if float(e[3]) < self.min_wrist_visibility:
+                continue
+            lengths.append(math.hypot(float(w[0]) - float(e[0]), float(w[1]) - float(e[1])))
+        if not lengths:
+            return 0.0
+        return sum(lengths) / len(lengths)
 
     def detect_from_frame(
         self,
